@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bạn Đang Ngoại Tuyến - Túi Mù Bí Mật</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --background: #f5f3ff;
+            --surface: #ffffff;
+            --text-main: #2d264a;
+            --text-sub: #675f8a;
+            --primary: #7657e8;
+            --radius: 24px;
+        }
+        [data-theme="dark"] {
+            --background: #0f0d19;
+            --surface: #1c192d;
+            --text-main: #f5f4fc;
+            --text-sub: #bab4d4;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--background);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .container {
+            max-width: 440px;
+            background: var(--surface);
+            padding: 40px 30px;
+            border-radius: var(--radius);
+            box-shadow: 0 16px 40px rgba(55, 42, 94, 0.08);
+            border: 1px solid rgba(118, 87, 232, 0.08);
+        }
+        .icon {
+            font-size: 4.5rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            display: inline-block;
+            animation: bounce 2s infinite alternate ease-in-out;
+        }
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-10px); }
+        }
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 0.92rem;
+            color: var(--text-sub);
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+        .btn {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            padding: 12px 28px;
+            border-radius: 16px;
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">
+            <i class="fa-solid fa-wifi-slash"></i>
+        </div>
+        <h1>Bạn đang ngoại tuyến</h1>
+        <p>Ứng dụng Túi Mù Bí Mật vẫn có thể hoạt động ngoại tuyến với các ván chơi đã lưu trên thiết bị của bạn. Hãy thử kiểm tra lại kết nối mạng hoặc tải lại trang.</p>
+        <button onclick="window.location.reload()" class="btn">
+            <i class="fa-solid fa-rotate-right"></i> Tải lại trang
+        </button>
+    </div>
+</body>
+</html>

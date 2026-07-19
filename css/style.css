@@ -1,0 +1,2026 @@
+/* ==========================================================================
+   STYLE.CSS - MINI GAME: TÚI MÙ BÍ MẬT (PHASE 5 WEB APP UPGRADE)
+   ========================================================================== */
+
+/* 1. VARIABLES (HỆ THỐNG BIẾN CSS DÙNG CHUNG) */
+:root {
+    /* Mảng màu Sáng */
+    --background-main: #f5f3ff;
+    --background-secondary: #fffbfd;
+    --surface: rgba(255, 255, 255, 0.85);
+    --surface-solid: #ffffff;
+    
+    --text-primary: #2d264a;
+    --text-secondary: #675f8a;
+    --text-muted: #9c95ba;
+    
+    --primary: #7657e8;
+    --primary-hover: #5d3fd3;
+    --primary-soft: #ede9fe;
+    
+    --success: #3cb07d;
+    --success-soft: #eafaf1;
+    --warning: #f1c40f;
+    --warning-soft: #fef9e7;
+    --danger: #e74c3c;
+    --danger-soft: #fdedec;
+    
+    --border: rgba(118, 87, 232, 0.12);
+    --shadow-soft: 0 10px 30px rgba(118, 87, 232, 0.06);
+    --shadow-card: 0 16px 40px rgba(55, 42, 94, 0.08);
+    --inner-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+    
+    --radius-small: 10px;
+    --radius-medium: 18px;
+    --radius-large: 26px;
+    
+    --transition-fast: 150ms ease;
+    --transition-normal: 250ms ease;
+
+    /* Màu mặc định cho người chơi */
+    --player-color: var(--primary);
+    --player-soft-color: var(--primary-soft);
+}
+
+/* Biến CSS cho Chế độ Dark Mode */
+[data-theme="dark"] {
+    --background-main: #0f0d19;
+    --background-secondary: #141221;
+    --surface: rgba(24, 21, 38, 0.88);
+    --surface-solid: #1c192d;
+    
+    --text-primary: #f5f4fc;
+    --text-secondary: #bab4d4;
+    --text-muted: #857e9c;
+    
+    --primary: #8a6cf7;
+    --primary-hover: #7657e8;
+    --primary-soft: rgba(118, 87, 232, 0.15);
+    
+    --success: #2ecc71;
+    --success-soft: rgba(46, 204, 113, 0.12);
+    --warning: #f1c40f;
+    --warning-soft: rgba(241, 196, 15, 0.12);
+    --danger: #e74c3c;
+    --danger-soft: rgba(231, 76, 60, 0.12);
+    
+    --border: rgba(255, 255, 255, 0.08);
+    --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.3);
+    --shadow-card: 0 16px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* 2. RESET & BASE */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, var(--background-main) 0%, var(--background-secondary) 100%);
+    color: var(--text-primary);
+    min-height: 100vh;
+    transition: background var(--transition-normal), color var(--transition-normal);
+}
+
+/* 3. LAYOUT (SPA APP SHELL) */
+.app-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+}
+
+.app-main-content {
+    flex: 1;
+    padding: 16px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.app-container {
+    width: 100%;
+}
+
+/* Card glassmorphism dùng chung */
+.card {
+    background: var(--surface);
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-large);
+    padding: 24px;
+    box-shadow: var(--shadow-card);
+    transition: background var(--transition-normal), border var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.hidden { display: none !important; }
+
+textarea[readonly] {
+    cursor: default;
+    opacity: 0.82;
+    background: var(--background-secondary);
+    border-color: var(--success);
+}
+
+/* SPA APP VIEWS */
+.app-view {
+    display: none;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.app-view.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 4. HEADER */
+.app-header {
+    text-align: center;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border);
+    margin-bottom: 15px;
+}
+
+.header-main-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 6px;
+}
+
+.logo {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pulse-icon {
+    animation: giftPulse 2s infinite alternate;
+}
+
+.tagline {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.header-controls {
+    display: flex;
+    gap: 8px;
+}
+
+/* 5. BUTTONS & CONTROLS */
+.btn {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: var(--radius-medium);
+    border: 1px solid transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all var(--transition-fast);
+    outline: none;
+    min-height: 44px;
+}
+
+.btn:disabled {
+    opacity: 0.55 !important;
+    cursor: not-allowed !important;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #ffffff;
+}
+.btn-primary:hover:not(:disabled) {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+.btn-secondary:hover:not(:disabled) {
+    background: rgba(118, 87, 232, 0.2);
+    transform: translateY(-1px);
+}
+
+.btn-success {
+    background: var(--success);
+    color: #ffffff;
+}
+.btn-success:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: #ffffff;
+}
+.btn-danger:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.btn-warning {
+    background: var(--warning);
+    color: #ffffff;
+}
+.btn-warning:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.btn-large {
+    padding: 12px 28px;
+    font-size: 1.05rem;
+    border-radius: var(--radius-medium);
+    width: 100%;
+}
+
+.btn-icon-round {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--surface-solid);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    outline: none;
+}
+
+.btn-icon-round:hover {
+    background: var(--primary-soft);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-icon-round.active {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+}
+
+/* Nút phụ dưới board */
+.board-controls-bar {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.btn-secondary-light {
+    background: rgba(118, 87, 232, 0.08);
+    color: var(--primary);
+    border: 1px solid rgba(118, 87, 232, 0.15);
+}
+.btn-secondary-light:hover {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+}
+
+.btn-danger-light {
+    background: rgba(231, 76, 60, 0.08);
+    color: var(--danger);
+    border: 1px solid rgba(231, 76, 60, 0.15);
+}
+.btn-danger-light:hover {
+    background: var(--danger-soft);
+    border-color: var(--danger);
+}
+
+/* 6. SETUP SCREEN ELEMENTS (BƯỚC THIẾT LẬP TẠO VÁN) */
+.setup-steps-progress {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin-bottom: 25px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.setup-steps-progress::before {
+    content: "";
+    position: absolute;
+    top: 16px; left: 0; right: 0;
+    height: 3px;
+    background: var(--border);
+    z-index: 1;
+}
+
+.setup-step-dot {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--surface-solid);
+    border: 2px solid var(--border);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.85rem;
+    z-index: 2;
+    transition: all var(--transition-fast);
+}
+
+.setup-step-dot.active {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+    color: var(--primary);
+    box-shadow: 0 0 0 4px var(--primary-soft);
+}
+
+.setup-step-dot.completed {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #ffffff;
+}
+
+.setup-step-content {
+    display: none;
+    animation: fadeIn var(--transition-normal);
+}
+
+.setup-step-content.active {
+    display: block;
+}
+
+.section-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select {
+    font-family: inherit;
+    font-size: 0.95rem;
+    padding: 12px 16px;
+    border-radius: var(--radius-medium);
+    border: 1px solid var(--border);
+    background: var(--surface-solid);
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color var(--transition-fast);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+}
+
+.form-group.half {
+    flex: 1;
+}
+
+.player-names-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.player-name-input-group {
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-medium);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+}
+
+.player-name-input-group label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.color-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+/* Radio Cards Game Mode */
+.mode-cards-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 8px;
+    margin-bottom: 20px;
+}
+
+.mode-card {
+    background: rgba(255, 255, 255, 0.4);
+    border: 2px solid rgba(0, 0, 0, 0.05);
+    border-radius: 20px;
+    padding: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.mode-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(108, 92, 231, 0.2);
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.mode-card.active {
+    background: rgba(108, 92, 231, 0.06);
+    border-color: var(--primary);
+    box-shadow: 0 10px 25px rgba(108, 92, 231, 0.1);
+}
+
+.mode-card-icon {
+    font-size: 1.8rem;
+    color: var(--primary);
+    background: rgba(108, 92, 231, 0.1);
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.mode-card-info h4 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text-primary);
+}
+
+.mode-card-info p {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 1.35;
+    margin: 0;
+}
+
+.mode-card-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 0.95rem;
+    color: var(--primary);
+    opacity: 0;
+    transform: scale(0.7);
+    transition: all 0.25s ease;
+}
+
+.mode-card.active .mode-card-badge {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Toggle Switches */
+.toggle-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.toggle-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: left;
+}
+
+.switch-container {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.switch-container input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--text-muted);
+    transition: .3s;
+    border-radius: 24px;
+}
+
+.switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+input:checked + .switch-slider {
+    background-color: var(--primary);
+}
+
+input:checked + .switch-slider:before {
+    transform: translateX(20px);
+}
+
+/* Thống kê bàn Setup */
+.grid-summary {
+    background: var(--primary-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-medium);
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.grid-summary.error {
+    background: var(--danger-soft);
+    border-color: rgba(231, 76, 60, 0.2);
+    color: var(--danger);
+}
+
+.summary-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.summary-text strong {
+    color: var(--primary);
+}
+
+.grid-summary.error .summary-text strong {
+    color: var(--danger);
+}
+
+.setup-nav-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+/* 7. SPLASH SCREEN (MÀN HÌNH CHỜ) */
+.splash-container {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, var(--background-main) 0%, var(--background-secondary) 100%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.4s ease, visibility 0s linear 0.4s;
+}
+
+.splash-container.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition-delay: 0s;
+}
+
+.splash-logo-wrapper {
+    font-size: 5rem;
+    color: var(--primary);
+    animation: bounce 2s infinite alternate ease-in-out;
+}
+
+.splash-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--primary);
+    letter-spacing: 1px;
+}
+
+.splash-loading {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* 8. HOME VIEW */
+.home-card-wrapper {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.home-logo-section {
+    margin-bottom: 30px;
+}
+
+.home-logo-icon {
+    font-size: 4.5rem;
+    color: var(--primary);
+    margin-bottom: 15px;
+    animation: giftPulse 2.5s infinite alternate ease-in-out;
+}
+
+.home-logo-section h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 10px;
+}
+
+.home-logo-section p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.home-menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* Card ván đang dở */
+.resume-game-preview-card {
+    background: rgba(118, 87, 232, 0.04);
+    border: 1.5px solid var(--primary);
+    border-radius: var(--radius-medium);
+    padding: 16px 20px;
+    text-align: left;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.resume-game-preview-card:hover {
+    background: var(--primary-soft);
+    transform: translateY(-1px);
+}
+
+.resume-game-preview-card h4 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.resume-game-info {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.45;
+}
+
+/* 9. BOTTOM NAVIGATION (DI ĐỘNG) */
+.bottom-navigation {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 64px;
+    background: var(--surface);
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.03);
+    transition: transform var(--transition-normal);
+}
+
+.bottom-navigation.hidden {
+    transform: translateY(100px) !important;
+}
+
+.nav-item {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    width: 25%;
+    height: 100%;
+    justify-content: center;
+    transition: color var(--transition-fast);
+    outline: none;
+}
+
+.nav-item i {
+    font-size: 1.25rem;
+    transition: transform var(--transition-fast);
+}
+
+.nav-item:hover, .nav-item.active {
+    color: var(--primary);
+}
+
+.nav-item.active i {
+    transform: translateY(-2px);
+}
+
+.app-shell-padding {
+    padding-bottom: 80px;
+}
+
+/* 10. LỊCH SỬ VÀ CHI TIẾT KẾT QUẢ */
+.history-filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: none;
+}
+
+.history-filters::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-btn {
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    border-radius: 12px;
+    min-height: auto;
+    background: var(--surface-solid);
+    border: 1.5px solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    transition: all var(--transition-fast);
+}
+
+.filter-btn.active {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+}
+
+.history-list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 16px;
+}
+
+.history-item-card {
+    background: var(--surface-solid);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-medium);
+    padding: 18px;
+    box-shadow: var(--shadow-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: left;
+    transition: all var(--transition-fast);
+    position: relative;
+}
+
+.history-item-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card);
+}
+
+.history-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed var(--border);
+    padding-bottom: 8px;
+}
+
+.history-card-title {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: var(--text-primary);
+}
+
+.history-card-date {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.history-card-info {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.45;
+}
+
+.history-card-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.btn-tiny {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    min-height: auto;
+    border-radius: 8px;
+}
+
+/* Xem lại câu nói ở màn chi tiết */
+.reveal-sentence-section {
+    margin-top: 20px;
+    border-top: 1px dashed var(--border);
+    padding-top: 15px;
+}
+
+.reveal-sentence-box {
+    background: var(--background-main);
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    padding: 12px 18px;
+    margin-top: 10px;
+    animation: errorFadeIn 0.3s ease;
+}
+
+/* 11. NHẬP LIỆU SCREEN ELEMENTS */
+.player-input-header {
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+.badge {
+    display: inline-block;
+    padding: 5px 12px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    border-radius: 12px;
+    color: #ffffff;
+    margin-bottom: 10px;
+}
+
+.player-input-scroll-container {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding: 10px 4px 20px;
+    scroll-snap-type: x proximity;
+}
+
+.input-box-card {
+    flex: 0 0 min(95vw, 360px);
+    background: var(--surface-solid);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-medium);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: var(--shadow-soft);
+}
+
+.input-box-card.input-box-disabled {
+    opacity: 0.42;
+    filter: grayscale(0.75);
+    background: var(--background-secondary);
+    border-style: dashed;
+}
+
+.inactive-box {
+    opacity: 0.32;
+    filter: grayscale(0.9);
+    cursor: not-allowed !important;
+}
+
+.inactive-box .grid-box {
+    box-shadow: none !important;
+}
+
+.input-box-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.box-number-tag {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.textarea-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.textarea-wrapper textarea {
+    font-family: inherit;
+    font-size: 0.92rem;
+    padding: 12px;
+    border-radius: var(--radius-small);
+    border: 1px solid var(--border);
+    background: var(--background-main);
+    color: var(--text-primary);
+    min-height: 90px;
+    resize: none;
+    outline: none;
+    transition: all var(--transition-fast);
+}
+
+.textarea-wrapper textarea:focus {
+    border-color: var(--player-color, var(--primary));
+    background: var(--surface-solid);
+}
+
+.char-counter {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-align: right;
+    margin-top: 4px;
+}
+
+.type-select-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.type-select-wrapper select {
+    font-family: inherit;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-solid);
+    color: var(--text-primary);
+    outline: none;
+}
+
+.box-actions-row {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-mini {
+    padding: 4px 8px;
+    font-size: 0.72rem;
+    min-height: auto;
+    border-radius: 8px;
+}
+
+/* Giao diện lưới chọn ô ghim câu bí ẩn */
+.secret-box-picker-section {
+    margin-top: 25px;
+    border-top: 1px dashed var(--border);
+    padding-top: 20px;
+    text-align: left;
+}
+
+.secret-box-picker-section h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.picker-instruction-text {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 15px;
+}
+
+.secret-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.picker-box {
+    aspect-ratio: 1.15 / 1;
+    background: var(--surface-solid);
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    position: relative;
+    transition: all 0.25s ease;
+}
+
+.picker-box:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(108, 92, 231, 0.02);
+    transform: translateY(-2px);
+}
+
+.picker-box.selected {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+    border-style: solid;
+    color: var(--primary);
+    box-shadow: 0 8px 16px rgba(108, 92, 231, 0.12);
+}
+
+.picker-pin {
+    font-size: 0.8rem;
+    color: var(--primary);
+    margin-top: 4px;
+}
+
+.selected-box-announcement {
+    background: rgba(46, 204, 113, 0.08);
+    border: 1px solid rgba(46, 204, 113, 0.2);
+    border-radius: 12px;
+    padding: 10px 15px;
+    color: var(--success);
+    font-size: 0.88rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 5px;
+    width: 100%;
+    box-sizing: border-box;
+    animation: errorFadeIn 0.25s ease forwards;
+}
+
+/* 12. PANEL THÔNG TIN LƯỢT CHƠI MỚI (TURN INDICATOR PANEL) */
+.turn-indicator-panel {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--surface-solid);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-medium);
+    padding: 16px 22px;
+    margin-top: 15px;
+    box-shadow: var(--shadow-soft);
+    text-align: left;
+    transition: border var(--transition-normal);
+}
+
+.active-player-avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+    background: var(--player-color, var(--primary));
+    flex-shrink: 0;
+}
+
+.turn-panel-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.turn-number-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+}
+
+.turn-panel-info h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.turn-action-desc {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+/* 13. BÀN CHƠI KHUI TÚI MÙ (BOARD & PLAYER ZONES) */
+.game-grid-container-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.game-grid-container {
+    display: flex;
+    gap: 22px;
+    overflow-x: auto;
+    padding-bottom: 16px;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+}
+
+.player-zone {
+    flex: 0 0 min(92vw, 440px);
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-large);
+    padding: 20px;
+    scroll-snap-align: center;
+    transition: all var(--transition-normal);
+    position: relative;
+}
+
+.player-zone-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    border-bottom: 1px dashed var(--border);
+    padding-bottom: 8px;
+}
+
+.player-box-list {
+    display: grid;
+    grid-template-rows: repeat(3, minmax(110px, auto));
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(130px, 1fr);
+    gap: 14px;
+    justify-content: center;
+    align-items: stretch;
+    overflow-x: auto;
+    padding: 4px;
+}
+
+/* Trạng thái khu vực */
+.player-zone.self-zone {
+    opacity: 0.72;
+}
+
+/* 14. THIẾT KẾ TÚI MÙ 3D (MYSTERY BOX) */
+.grid-box-wrapper {
+    perspective: 1000px;
+    aspect-ratio: 1.2 / 1;
+}
+
+.mystery-box {
+    width: 100%;
+    height: 100%;
+    min-height: 105px;
+    background: none;
+    border: none;
+    cursor: default;
+    outline: none;
+}
+
+.grid-box {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.grid-box.opened {
+    transform: rotateY(180deg);
+}
+
+.box-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: var(--radius-medium);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    box-shadow: var(--shadow-soft);
+}
+
+/* MẶT TRƯỚC (CHƯA MỞ) */
+.box-face.front {
+    background: var(--surface-solid);
+    border: 2px solid var(--border);
+    transition: all var(--transition-fast);
+}
+
+.gift-symbol-wrapper {
+    font-size: 2.1rem;
+    color: var(--player-color, var(--primary));
+    margin-bottom: 4px;
+    transition: transform var(--transition-fast);
+}
+
+.box-number {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    background: rgba(0, 0, 0, 0.04);
+    padding: 1px 9px;
+    border-radius: 12px;
+    margin-top: 2px;
+    box-shadow: var(--inner-shadow);
+}
+
+.owner-corner-tag {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.04);
+    color: var(--text-secondary);
+}
+
+.grid-box-wrapper:not(.disabled) .grid-box:not(.opened):not(.disabled) {
+    cursor: pointer;
+}
+
+.grid-box-wrapper:not(.disabled) .grid-box:not(.opened):not(.disabled):hover .box-face.front {
+    transform: translateY(-5px) scale(1.02);
+    border-color: var(--player-color, var(--primary));
+    box-shadow: 0 12px 24px rgba(55, 42, 94, 0.12);
+}
+
+.grid-box-wrapper:not(.disabled) .grid-box:not(.opened):not(.disabled):hover .gift-symbol-wrapper {
+    transform: translateY(-3px) scale(1.08) rotate(3deg);
+}
+
+.grid-box.disabled .box-face.front {
+    background: var(--background-main);
+    border-color: var(--border);
+    cursor: not-allowed;
+}
+
+.grid-box.disabled .gift-symbol-wrapper {
+    opacity: 0.45;
+}
+
+/* MẶT SAU (ĐÃ MỞ) */
+.box-face.back {
+    transform: rotateY(180deg);
+    background: var(--surface-solid);
+    border: 2px solid var(--border);
+    color: var(--text-primary);
+}
+
+.opened-icon-wrapper {
+    font-size: 1.85rem;
+    margin-bottom: 6px;
+}
+
+.box-type-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 8px;
+}
+
+.back.type-question { border-color: var(--primary); color: var(--primary); }
+.back.type-dare { border-color: var(--success); color: var(--success); }
+.back.type-gift { border-color: var(--warning); color: #c0392b; }
+.back.type-punish { border-color: var(--danger); color: var(--danger); }
+.back.type-secret { border-color: var(--primary); color: var(--primary); }
+
+.back.type-question i { color: var(--primary); }
+.back.type-dare i { color: var(--success); }
+.back.type-gift i { color: var(--warning); }
+.back.type-punish i { color: var(--danger); }
+.back.type-secret i { color: var(--primary); }
+
+/* Chế độ mới: Ô trống & Ô tìm thấy */
+.back.type-empty {
+    background: rgba(0, 0, 0, 0.03) !important;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+    color: var(--text-muted) !important;
+}
+
+.back.type-secret-found {
+    background: linear-gradient(135deg, #fff9db, #fff3bf) !important;
+    border-color: #f1c40f !important;
+    color: #d35400 !important;
+    box-shadow: 0 10px 25px rgba(241, 196, 15, 0.25) !important;
+}
+
+.back.type-secret-found .opened-icon-wrapper i {
+    color: #e67e22 !important;
+}
+
+/* 15. MODALS HỆ THỐNG */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 13, 25, 0.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 250ms ease;
+    padding: 15px;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-card {
+    width: 100%;
+    max-width: 460px;
+    transform: scale(0.92);
+    transition: transform 250ms cubic-bezier(0.175, 0.885, 0.32, 1.15);
+}
+
+.modal-overlay.active .modal-card {
+    transform: scale(1);
+}
+
+.card-inner {
+    width: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+}
+
+.card-inner.flipped {
+    transform: rotateY(180deg);
+}
+
+.card-front, .card-back {
+    width: 100%;
+    background: var(--surface);
+    backdrop-filter: blur(20px);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-large);
+    padding: 26px;
+    box-shadow: var(--shadow-card);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.card-back {
+    transform: rotateY(180deg);
+}
+
+.box-opening-animation {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    min-height: 220px;
+}
+
+.box-icon-large {
+    font-size: 4rem;
+    color: var(--primary);
+    animation: boxReveal 0.8s infinite alternate ease-in-out;
+}
+
+@keyframes boxReveal {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.08) rotate(3deg); }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    border-bottom: 1px dashed var(--border);
+    padding-bottom: 12px;
+}
+
+.owner-badge {
+    padding: 5px 12px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    border-radius: 12px;
+    color: #ffffff;
+}
+
+.content-type-icon-wrapper {
+    font-size: 1.8rem;
+}
+
+.type-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text-secondary);
+}
+
+.modal-body {
+    margin-bottom: 24px;
+}
+
+.box-content-scroll {
+    max-height: 180px;
+    overflow-y: auto;
+    padding: 6px;
+}
+
+#modal-secret-content {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.18rem;
+    font-weight: 700;
+    line-height: 1.5;
+    color: var(--text-primary);
+    word-break: break-word;
+}
+
+.modal-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
+.action-tip {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+/* Modal Hướng dẫn chi tiết */
+.guide-modal-card {
+    max-width: 580px;
+}
+
+.guide-glass-card {
+    padding: 26px;
+    border-radius: var(--radius-large);
+    background: var(--surface);
+    border: 2px solid var(--border);
+    box-shadow: var(--shadow-card);
+    position: relative;
+}
+
+.guide-modal-header {
+    position: relative;
+    border-bottom: 1px dashed var(--border);
+    padding-bottom: 14px;
+    margin-bottom: 20px;
+}
+
+.guide-modal-header h2 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 1.45rem;
+    color: var(--text-primary);
+}
+
+.guide-icon-large {
+    font-size: 3.2rem;
+    color: var(--primary);
+    margin-bottom: 10px;
+}
+
+.btn-close-guide {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary-soft);
+    border: none;
+    color: var(--primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.btn-close-guide:hover {
+    background: var(--primary);
+    color: #ffffff;
+}
+
+.guide-modal-body {
+    text-align: left;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.guide-section {
+    margin-bottom: 18px;
+}
+
+.guide-section h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.guide-section p {
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: var(--text-secondary);
+}
+
+.guide-section ul {
+    padding-left: 20px;
+    margin-top: 4px;
+    margin-bottom: 6px;
+}
+
+.guide-section li {
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.guide-tip {
+    background: var(--primary-soft);
+    border-left: 3px solid var(--primary);
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-top: 8px;
+    font-size: 0.78rem !important;
+}
+
+/* 16. TOAST NOTIFICATION HỆ THỐNG */
+.toast {
+    position: fixed;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-primary);
+    color: var(--surface-solid);
+    padding: 12px 24px;
+    border-radius: var(--radius-medium);
+    font-size: 0.88rem;
+    font-weight: 600;
+    box-shadow: var(--shadow-card);
+    z-index: 1100;
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    opacity: 1;
+}
+
+.toast.hidden {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+    pointer-events: none;
+}
+
+/* 17. KHỐI CHÚC MỪNG CHIẾN THẮNG CHẾ ĐỘ MỚI */
+.secret-winner-card {
+    margin-bottom: 25px;
+    animation: errorFadeIn 0.5s ease forwards;
+}
+
+.winner-crown-wrapper {
+    font-size: 4.8rem;
+    color: #f1c40f;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 10px 20px rgba(241, 196, 15, 0.3));
+}
+
+.winner-crown-icon {
+    animation: crownFloat 3s infinite ease-in-out;
+}
+
+@keyframes crownFloat {
+    0% { transform: translateY(0) rotate(0); }
+    50% { transform: translateY(-8px) rotate(4deg); }
+    100% { transform: translateY(0) rotate(0); }
+}
+
+.winner-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #f1c40f, #e67e22);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.winner-desc {
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+}
+
+.winner-sentence-box {
+    background: rgba(108, 92, 231, 0.04);
+    border: 1.5px solid rgba(108, 92, 231, 0.1);
+    border-radius: 20px;
+    padding: 25px 35px;
+    position: relative;
+    max-width: 500px;
+    margin: 0 auto 20px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.winner-sentence-box p {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1.5;
+    margin: 0;
+    word-break: break-word;
+}
+
+.quote-icon-left, .quote-icon-right {
+    position: absolute;
+    font-size: 1.2rem;
+    color: rgba(108, 92, 231, 0.25);
+}
+
+.quote-icon-left {
+    top: 15px;
+    left: 15px;
+}
+
+.quote-icon-right {
+    bottom: 15px;
+    right: 15px;
+}
+
+/* 18. ANIMATIONS */
+@keyframes giftPulse {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.1) rotate(5deg); }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes float-animation {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+    100% { transform: translateY(0); }
+}
+
+@keyframes bounce {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-12px); }
+}
+
+@keyframes errorFadeIn {
+    from { opacity: 0; transform: translateY(-3px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.shake-animation {
+    animation: boxShake 0.4s ease;
+}
+
+@keyframes boxShake {
+    0%, 100% { transform: rotate(0); }
+    20%, 60% { transform: rotate(-5deg); }
+    40%, 80% { transform: rotate(5deg); }
+}
+
+/* 19. RESPONSIVE DESIGN & DESKTOP SIDEBAR */
+.scroll-gradient-indicator {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40px;
+    height: calc(100% - 16px);
+    background: linear-gradient(to right, transparent, var(--background-main));
+    pointer-events: none;
+    z-index: 5;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.scroll-helper-text {
+    position: absolute;
+    bottom: -6px;
+    right: 15px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--primary);
+    background: var(--primary-soft);
+    padding: 3px 8px;
+    border-radius: 8px;
+    pointer-events: none;
+    z-index: 5;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    animation: float-animation 2.5s infinite ease-in-out;
+}
+
+.scroll-gradient-indicator.fade-out,
+.scroll-helper-text.fade-out {
+    opacity: 0 !important;
+}
+
+:focus-visible {
+    outline: 3px solid var(--primary);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 4px rgba(118, 87, 232, 0.25);
+}
+
+.sidebar-navigation {
+    display: none;
+}
+
+/* RESPONSIVE LAYOUT CHO DESKTOP */
+@media (min-width: 769px) {
+    .app-shell {
+        flex-direction: row;
+        align-items: stretch;
+    }
+    
+    .sidebar-navigation {
+        display: flex;
+        flex-direction: column;
+        width: 260px;
+        background: var(--surface);
+        backdrop-filter: blur(16px);
+        border-right: 1px solid var(--border);
+        padding: 30px 20px;
+        gap: 35px;
+        flex-shrink: 0;
+        z-index: 100;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.02);
+    }
+    
+    .sidebar-brand {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .sidebar-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .sidebar-item {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 18px;
+        border-radius: var(--radius-medium);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        text-align: left;
+        outline: none;
+        width: 100%;
+    }
+    
+    .sidebar-item:hover, .sidebar-item.active {
+        color: var(--primary);
+        background: var(--primary-soft);
+    }
+    
+    .bottom-navigation {
+        display: none !important;
+    }
+    
+    .app-main-content {
+        padding: 30px;
+        overflow-y: auto;
+    }
+    
+    .app-shell-padding {
+        padding-bottom: 0px;
+    }
+
+    .game-grid-container {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x proximity;
+    }
+
+    .player-zone {
+        flex: 0 0 min(46vw, 500px);
+        scroll-snap-align: start;
+    }
+    
+    .mode-cards-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .btn-large {
+        width: auto;
+    }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+    .player-zone {
+        flex: 0 0 min(46vw, 420px);
+    }
+}
+
+@media (max-width: 768px) {
+    .app-main-content {
+        padding: 16px;
+    }
+    
+    .card {
+        padding: 20px;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .player-names-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .game-grid-container {
+        gap: 12px;
+    }
+    
+    .player-zone {
+        flex: 0 0 min(90vw, 380px);
+    }
+    
+    .box-face {
+        border-radius: 12px;
+    }
+    
+    .gift-symbol-wrapper {
+        font-size: 1.75rem;
+    }
+    
+    .box-number {
+        font-size: 0.72rem;
+    }
+    
+    .owner-corner-tag {
+        font-size: 0.58rem;
+        padding: 1px 4px;
+    }
+    
+    .board-controls-bar {
+        gap: 8px;
+        padding: 6px;
+    }
+    
+    .btn-icon {
+        padding: 8px 12px;
+        font-size: 0.78rem;
+    }
+
+    .player-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 20. REDUCED MOTION */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    
+    .pulse-icon, .animate-float, .winner-crown-icon, .animate-bounce, .box-icon-large {
+        animation: none !important;
+    }
+}

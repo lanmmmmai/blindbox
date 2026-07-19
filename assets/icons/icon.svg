@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f5f3ff" />
+      <stop offset="100%" stop-color="#ede9fe" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <stop offset="0%" stop-color="#7657e8" stop-opacity="0.3"/>
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#7657e8" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="url(#bgGrad)" stroke="#7657e8" stroke-width="8"/>
+  <!-- Gift Box Body -->
+  <g filter="url(#shadow)">
+    <!-- Box base -->
+    <rect x="146" y="240" width="220" height="150" rx="16" fill="#7657e8" />
+    <!-- Box Lid -->
+    <rect x="126" y="200" width="260" height="50" rx="12" fill="#ef7fa6" />
+    <!-- Ribbon Vertical -->
+    <rect x="236" y="200" width="40" height="190" fill="#f1c40f" />
+    <!-- Ribbon Horizontal -->
+    <rect x="146" y="295" width="220" height="30" fill="#f1c40f" />
+    <!-- Ribbon Bow Left -->
+    <path d="M 236 200 C 190 140, 150 190, 236 200 Z" fill="#f1c40f" />
+    <!-- Ribbon Bow Right -->
+    <path d="M 276 200 C 322 140, 362 190, 276 200 Z" fill="#f1c40f" />
+  </g>
+</svg>

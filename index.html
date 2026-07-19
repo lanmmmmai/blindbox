@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Túi Mù Bí Mật - Web App</title>
+    
+    <!-- Link PWA manifest -->
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" href="./assets/icons/icon.svg" type="image/svg+xml">
+    <meta name="theme-color" content="#7657e8">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="./assets/icons/icon.svg">
+    
+    <!-- Google Fonts: Outfit và Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Style CSS của Web App -->
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+    <!-- 1. SPLASH SCREEN (MÀN HÌNH CHỜ BAN ĐẦU) -->
+    <div id="view-splash" class="splash-container active">
+        <div class="splash-logo-wrapper">
+            <i class="fa-solid fa-gift pulse-icon"></i>
+        </div>
+        <h1 class="splash-title">TÚI MÙ BÍ MẬT</h1>
+        <div class="splash-loading">
+            <i class="fa-solid fa-circle-notch fa-spin"></i> Đang tải trò chơi...
+        </div>
+    </div>
+
+    <!-- MAIN APP SHELL -->
+    <div class="app-shell">
+        
+        <!-- SIDEBAR NAVIGATION (CHỈ HIỆN TRÊN DESKTOP) -->
+        <aside class="sidebar-navigation">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-gift pulse-icon"></i> Túi Mù Bí Mật
+            </div>
+            <nav class="sidebar-menu">
+                <button class="sidebar-item active" data-route="home">
+                    <i class="fa-solid fa-house"></i> Trang chủ
+                </button>
+                <button class="sidebar-item" data-route="game">
+                    <i class="fa-solid fa-circle-play"></i> Ván chơi
+                </button>
+                <button class="sidebar-item" data-route="history">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử
+                </button>
+                <button class="sidebar-item" data-route="settings">
+                    <i class="fa-solid fa-gear"></i> Cài đặt
+                </button>
+                <button class="sidebar-item" data-route="help">
+                    <i class="fa-solid fa-circle-info"></i> Trợ giúp
+                </button>
+            </nav>
+            <div style="margin-top: auto; font-size: 0.72rem; color: var(--text-muted); font-weight: 500;">
+                Phiên bản 1.0 (PWA)
+            </div>
+        </aside>
+
+        <!-- MAIN SPA CONTENT CONTAINER -->
+        <main class="app-main-content">
+            
+            <!-- HEADER TRÊN DI ĐỘNG (ẨN MENU CHÍNH VÌ ĐÃ CÓ BOTTOM NAV) -->
+            <header class="app-header">
+                <div class="header-main-row">
+                    <h1 class="logo"><i class="fa-solid fa-gift pulse-icon"></i> Túi Mù Bí Mật</h1>
+                    <div class="header-controls">
+                        <button id="btn-toggle-theme" class="btn-icon-round" title="Chuyển chế độ Sáng/Tối">
+                            <i class="fa-solid fa-circle-half-stroke"></i>
+                        </button>
+                        <button id="btn-toggle-guide" class="btn-icon-round" title="Xem Hướng dẫn nhanh">
+                            <i class="fa-solid fa-circle-question"></i>
+                        </button>
+                    </div>
+                </div>
+                <p class="tagline">Mini game khui quà và thử thách nhóm lầy lội</p>
+            </header>
+
+            <!-- ==================== SPA VIEWS ==================== -->
+
+            <!-- VIEW 1: TRANG CHỦ (HOME VIEW) -->
+            <section id="view-home" class="app-view">
+                <div class="card home-card-wrapper text-center">
+                    <div class="home-logo-section">
+                        <i class="fa-solid fa-gift home-logo-icon"></i>
+                        <h1>Túi Mù Bí Mật</h1>
+                        <p>Trò chơi khui túi quà, câu nói và thử thách bí ẩn nhóm cực lầy lội. Tạo ván chơi của riêng bạn và thách thức bạn bè!</p>
+                    </div>
+                    
+                    <!-- Ván chơi đang dở -->
+                    <div id="resume-game-container">
+                        <!-- Được render bằng JS -->
+                    </div>
+
+                    <div class="home-menu-list">
+                        <button class="btn btn-primary btn-large" onclick="navigateTo('create')">
+                            <i class="fa-solid fa-circle-plus"></i> Tạo ván chơi mới
+                        </button>
+                        <button class="btn btn-secondary btn-large" onclick="navigateTo('history')">
+                            <i class="fa-solid fa-list-check"></i> Xem lịch sử ván chơi
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 2: TRÌNH TẠO VÁN CHƠI 4 BƯỚC (CREATE VIEW) -->
+            <section id="view-create" class="app-view">
+                <div class="card">
+                    <!-- Progress steps indicator -->
+                    <div class="setup-steps-progress">
+                        <div class="setup-step-dot active">1</div>
+                        <div class="setup-step-dot">2</div>
+                        <div class="setup-step-dot">3</div>
+                        <div class="setup-step-dot">4</div>
+                    </div>
+
+                    <!-- BƯỚC 1: CHỌN CHẾ ĐỘ CHƠI -->
+                    <div id="setup-step-1" class="setup-step-content active">
+                        <h2 class="section-title"><i class="fa-solid fa-gamepad"></i> Chọn Chế Độ Chơi</h2>
+                        <div class="mode-cards-grid">
+                            <div class="mode-card active" id="create-mode-normal" onclick="selectDraftMode('normal')">
+                                <div class="mode-card-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+                                <div class="mode-card-info">
+                                    <h4>Túi mù thông thường</h4>
+                                    <p>Mỗi người viết nội dung cho nhiều ô. Mở tuần tự cho đến khi tất cả túi mù được khui hết.</p>
+                                </div>
+                                <div class="mode-card-badge"><i class="fa-solid fa-circle-check"></i></div>
+                            </div>
+                            <div class="mode-card" id="create-mode-secret" onclick="selectDraftMode('find-secret-sentence')">
+                                <div class="mode-card-icon"><i class="fa-solid fa-user-secret"></i></div>
+                                <div class="mode-card-info">
+                                    <h4>Tìm câu nói bí mật</h4>
+                                    <p>Mỗi người viết đúng 1 câu duy nhất và giấu vào 1 ô bất kỳ. Ai khui đúng câu nói bí mật của đối thủ trước sẽ thắng ngay.</p>
+                                </div>
+                                <div class="mode-card-badge"><i class="fa-solid fa-circle-check"></i></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BƯỚC 2: THIẾT LẬP NGƯỜI CHƠI -->
+                    <div id="setup-step-2" class="setup-step-content">
+                        <h2 class="section-title"><i class="fa-solid fa-users"></i> Thiết Lập Người Chơi</h2>
+                        
+                        <div class="form-group" id="create-player-count-select-row">
+                            <label for="create-player-count"><i class="fa-solid fa-user-gear"></i> Số người chơi</label>
+                            <select id="create-player-count" onchange="changeDraftPlayerCount(this.value)">
+                                <option value="2" selected>2 Người</option>
+                                <option value="3">3 Người</option>
+                                <option value="4">4 Người</option>
+                            </select>
+                        </div>
+
+                        <p id="create-info-secret-player" class="selected-box-announcement hidden" style="margin-bottom:15px; color: var(--primary); background: var(--primary-soft); border-color: var(--border);">
+                            <i class="fa-solid fa-circle-info"></i> Chế độ "Tìm câu nói bí mật" chỉ dành riêng cho đúng 2 người chơi.
+                        </p>
+
+                        <!-- Danh sách tên người chơi -->
+                        <div id="create-players-container" class="player-names-grid">
+                            <!-- JS render -->
+                        </div>
+                    </div>
+
+                    <!-- BƯỚC 3: THIẾT LẬP Ô VÀ PHÂN PHỐI -->
+                    <div id="setup-step-3" class="setup-step-content">
+                        <h2 class="section-title"><i class="fa-solid fa-boxes-packing"></i> Cấu Hình Lưới Ô Chơi</h2>
+                        
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label for="create-boxes-per-player"><i class="fa-solid fa-box"></i> Số ô mỗi người (1 - 12)</label>
+                                <input type="number" id="create-boxes-per-player" min="1" max="12" value="6" onchange="changeDraftBoxes(this.value)">
+                            </div>
+                            <div class="form-group half" id="create-dist-mode-select-row">
+                                <label for="create-dist-mode"><i class="fa-solid fa-shuffle"></i> Phân phối ô</label>
+                                <select id="create-dist-mode" onchange="changeDraftDistMode(this.value)">
+                                    <option value="random" selected>Chia đều ngẫu nhiên</option>
+                                    <option value="area">Chia theo khu vực</option>
+                                    <option value="alternate">Chia xen kẽ</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="create-active-boxes-row">
+                            <label for="create-active-boxes-per-player"><i class="fa-solid fa-pen-to-square"></i> Số túi gợi ý mặc định mỗi người</label>
+                            <input type="number" id="create-active-boxes-per-player" min="1" max="6" value="6" onchange="changeDraftActiveBoxes(this.value)">
+                            <small style="color: var(--text-muted);">Mỗi người có thể đổi số lượng và tự chọn vị trí túi khi đến lượt nhập.</small>
+                        </div>
+
+                        <!-- Lựa chọn ô nhanh -->
+                        <div style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;">
+                            <button class="btn btn-mini btn-secondary" onclick="selectQuickBoxes(3)">3 Ô</button>
+                            <button class="btn btn-mini btn-secondary" onclick="selectQuickBoxes(6)">6 Ô</button>
+                            <button class="btn btn-mini btn-secondary" onclick="selectQuickBoxes(9)">9 Ô</button>
+                            <button class="btn btn-mini btn-secondary" onclick="selectQuickBoxes(12)">12 Ô</button>
+                        </div>
+
+                        <!-- Cấu hình theme gợi ý (chế độ thường) -->
+                        <div class="form-group" id="create-theme-select-row">
+                            <label for="create-theme-preset"><i class="fa-solid fa-wand-magic-sparkles"></i> Chủ đề gợi ý ngẫu nhiên</label>
+                            <select id="create-theme-preset" onchange="changeDraftTheme(this.value)">
+                                <option value="friend" selected>Bạn bè lầy lội</option>
+                                <option value="couple">Hẹn hò ngọt ngào</option>
+                                <option value="truth-dare">Sự thật hay Thách thức</option>
+                                <option value="gift">Hộp quà may mắn</option>
+                                <option value="punish">Bàn tiệc hình phạt</option>
+                                <option value="custom">Tự viết hoàn toàn</option>
+                            </select>
+                        </div>
+
+                        <!-- Preview Grid -->
+                        <div id="create-grid-preview">
+                            <!-- Xem trước lưới -->
+                        </div>
+
+                        <!-- Thống kê tổng số ô -->
+                        <div id="create-grid-summary" class="grid-summary" style="margin-top: 15px;">
+                            <div class="summary-text">
+                                Tổng số ô trên bàn: <strong id="create-total-cells-text">12</strong> ô. 
+                                Mỗi người sở hữu: <strong id="create-cells-per-player-text">6</strong> ô,
+                                trong đó <strong id="create-active-cells-text">6</strong> ô có câu nói.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BƯỚC 4: TÓM TẮT & BẮT ĐẦU -->
+                    <div id="setup-step-4" class="setup-step-content">
+                        <h2 class="section-title"><i class="fa-solid fa-clipboard-check"></i> Xác Nhận Tạo Ván Chơi</h2>
+                        <div id="create-summary-details" style="margin-bottom: 20px;">
+                            <!-- Tóm tắt chi tiết -->
+                        </div>
+                    </div>
+
+                    <!-- Cụm nút điều hướng Setup -->
+                    <div class="setup-nav-actions">
+                        <button class="btn btn-secondary btn-large" onclick="prevSetupStep()">
+                            <i class="fa-solid fa-arrow-left"></i> Quay lại
+                        </button>
+                        <button class="btn btn-primary btn-large" onclick="nextSetupStep()">
+                            Tiếp theo <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 3: PHÒNG CHỜ VÁN CHƠI (LOBBY VIEW) -->
+            <section id="view-lobby" class="app-view">
+                <div class="card text-center">
+                    <div style="font-size: 4rem; color: var(--primary); margin-bottom: 12px;">
+                        <i class="fa-solid fa-house-laptop animate-float"></i>
+                    </div>
+                    <h2 id="lobby-game-title" style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--primary); margin-bottom: 6px;">Đêm Hội Vui Vẻ</h2>
+                    <p id="lobby-game-mode" style="font-size: 0.9rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 15px;">Chế độ: Túi mù thông thường</p>
+                    
+                    <div class="grid-summary" style="text-align: left; margin-bottom: 20px;">
+                        <p style="margin-bottom: 5px;"><strong>Tổng số ô chơi:</strong> <span id="lobby-boxes-count">12 ô</span></p>
+                        <p><strong>Danh sách người chơi:</strong></p>
+                        <ul id="lobby-players-list" style="padding-left: 20px; margin-top: 5px;">
+                            <!-- Tên các người chơi -->
+                        </ul>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button class="btn btn-primary btn-large" onclick="startInputFlowFromLobby()">
+                            <i class="fa-solid fa-feather-pointed"></i> Bắt đầu viết nội dung
+                        </button>
+                        <button class="btn btn-danger-light btn-large" onclick="abortLobbyToSetup()">
+                            <i class="fa-solid fa-trash-can"></i> Hủy ván chơi này
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 4: NHẬP NỘI DUNG VÀ GHIM Ô BẢO MẬT (INPUT VIEW) -->
+            <section id="view-input" class="app-view">
+                <!-- SUBVIEW A: GIỚI THIỆU LƯỢT NHẬP -->
+                <div id="input-intro-subview" class="card text-center">
+                    <div class="splash-logo-wrapper" style="font-size: 4rem; margin-bottom: 10px;">
+                        <i class="fa-solid fa-feather-pointed intro-icon animate-float"></i>
+                    </div>
+                    <h2 id="intro-player-title" style="font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--primary);">Lượt tạo túi mù</h2>
+                    <p id="intro-desc-text" style="font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;"></p>
+                    
+                    <div class="selected-box-announcement" id="intro-privacy-warning-box" style="background: var(--danger-soft); border-color: rgba(231,76,60,0.15); color: var(--danger); text-align: left; margin-bottom: 25px;">
+                        <i class="fa-solid fa-user-shield"></i>
+                        <span>Hãy chắc chắn rằng chỉ có <strong id="intro-player-name-warn">...</strong> đang nhìn màn hình.</span>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button class="btn btn-primary btn-large" onclick="startInputFromIntro()">
+                            <i class="fa-solid fa-pencil"></i> Tôi đã sẵn sàng viết
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SUBVIEW B: FORM NHẬP THỰC TẾ -->
+                <div id="player-input-subview" class="card text-center hidden">
+                    <div class="player-input-header">
+                        <span class="badge" id="player-input-badge">Người chơi 1</span>
+                        <h2 id="player-input-title" style="font-family:'Outfit',sans-serif; font-size: 1.45rem; font-weight:800; margin-top:10px;">Đang thiết lập ô chơi</h2>
+                        
+                        <!-- Tiến trình nhập liệu (Chỉ chế độ thường) -->
+                        <div class="grid-summary" id="input-progress-section" style="margin-top: 15px; margin-bottom: 15px;">
+                            <div id="normal-box-selection-controls" style="text-align: left; margin-bottom: 14px;">
+                                <label for="normal-active-box-count" style="display:block; margin-bottom:6px;"><i class="fa-solid fa-hand-pointer"></i> Số túi bạn muốn dùng</label>
+                                <input type="number" id="normal-active-box-count" min="1" max="6" value="6" onchange="changePlayerActiveBoxCount(this.value)" style="max-width:160px;">
+                                <p id="normal-box-selection-status" style="margin-top:6px; color:var(--text-secondary); font-size:0.78rem;">Hãy chọn vị trí túi bên dưới.</p>
+                            </div>
+                            <div style="height: 6px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 8px;">
+                                <div id="input-progress-bar" style="height: 100%; width: 0%; background: var(--primary); transition: width 0.2s;"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.78rem; font-weight:700; color: var(--text-secondary);">
+                                <span id="input-progress-text">Đã viết: 0/6 ô (0%)</span>
+                                <span id="input-remaining-text">Chưa điền: 6 ô</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Container ô nhập (Chế độ thường) -->
+                    <div id="player-input-fields" class="player-input-scroll-container">
+                        <!-- JS render -->
+                    </div>
+
+                    <!-- Container nhập câu bí mật & picker (Chế độ tìm câu) -->
+                    <div id="secret-input-container" class="hidden">
+                        <div class="input-box-card" style="margin-bottom: 20px; text-align: left;">
+                            <div class="form-group">
+                                <label id="secret-sentence-label" for="secret-sentence-textarea"><i class="fa-solid fa-key"></i> Câu nói bí mật duy nhất của bạn:</label>
+                                <div class="textarea-wrapper">
+                                    <textarea id="secret-sentence-textarea" placeholder="Nhập câu nói lầy lội, lời thú tội hoặc thử thách độc nhất..." maxlength="200" oninput="handleSecretTextInput(this)" onblur="trimSecretTextInput(this)"></textarea>
+                                    <div class="char-counter" id="secret-char-counter">200 ký tự</div>
+                                </div>
+                                <p id="secret-reuse-notice" class="selected-box-announcement hidden" style="margin-top: 12px; color: var(--success); text-align: left;">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                    Câu nói cũ đã được giữ nguyên. Bạn chỉ cần chọn một vị trí giấu mới.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="secret-box-picker-section">
+                            <h3><i class="fa-solid fa-map-pin"></i> Chọn ô giấu câu nói trong khu vực của bạn:</h3>
+                            <p class="picker-instruction-text">Chọn 1 ô bất kỳ dưới đây. Đối phương khui trúng ô này sẽ thất bại ngay lập tức!</p>
+                            
+                            <div id="secret-picker-grid" class="secret-picker-grid">
+                                <!-- JS render grid picker -->
+                            </div>
+
+                            <div id="box-picker-announcement" class="selected-box-announcement hidden">
+                                <i class="fa-solid fa-thumbtack"></i> Đã ghim câu bí mật vào <strong>túi mù số <span id="selected-picker-num">0</span></strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 25px;">
+                        <p id="input-lock-warning-text" style="color: var(--danger); font-size: 0.82rem; font-weight: 700; margin-bottom: 12px;"></p>
+                        <button id="btn-lock-boxes" class="btn btn-primary btn-large" onclick="requestLockPlayerBoxes()">
+                            <i class="fa-solid fa-lock"></i> Khóa & Lưu túi mù
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 5: MÀN HÌNH CHUYỂN THIẾT BỊ BẢO MẬT (PRIVACY VIEW) -->
+            <section id="view-privacy" class="app-view">
+                <div class="card glassmorphism text-center">
+                    <div style="font-size: 4.5rem; color: var(--success); margin-bottom: 15px;">
+                        <i class="fa-solid fa-shield-halved animate-float"></i>
+                    </div>
+                    <h2 id="privacy-locked-title" style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--success); margin-bottom: 8px;">Đã khóa an toàn!</h2>
+                    <p id="privacy-msg-instruction" style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 25px; line-height: 1.5;"></p>
+                    
+                    <div class="grid-summary text-center" style="margin-bottom: 25px;">
+                        <p style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 0.6px; margin-bottom: 3px;">Người tiếp theo</p>
+                        <h3 id="next-player-name" style="font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--primary);">Giai đoạn chơi</h3>
+                    </div>
+
+                    <button id="btn-next-player" class="btn btn-primary btn-large" onclick="moveToNextInputPlayer()">
+                        Tôi là <strong id="btn-next-player-name">...</strong>, tiếp tục
+                    </button>
+                </div>
+            </section>
+
+            <!-- VIEW 6: MÀN HÌNH SẴN SÀNG CHƠI (READY VIEW) -->
+            <section id="view-ready" class="app-view">
+                <div class="card text-center">
+                    <div class="splash-logo-wrapper" style="font-size: 4.2rem; color: var(--primary); margin-bottom: 12px;">
+                        <i class="fa-solid fa-gift pulse-icon"></i>
+                    </div>
+                    <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.7rem; font-weight: 800; color: var(--primary); margin-bottom: 10px;">Thiết lập hoàn tất!</h2>
+                    
+                    <div id="ready-players-summary" style="font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;">
+                        <!-- Summary -->
+                    </div>
+
+                    <div class="grid-summary" style="text-align: left; margin-bottom: 25px;">
+                        <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;"><i class="fa-solid fa-scale-balanced"></i> Luật chơi khui ô bảo mật:</h4>
+                        <ul id="ready-rules-list" style="padding-left: 20px; font-size: 0.85rem; line-height: 1.5; color: var(--text-secondary);">
+                            <!-- Rules list -->
+                        </ul>
+                    </div>
+
+                    <p style="font-size: 0.95rem; font-weight: 700; margin-bottom: 20px;">Lượt khui đầu tiên: <strong id="ready-first-player" style="font-size: 1.05rem;">My Lan</strong></p>
+
+                    <button class="btn btn-primary btn-large" onclick="startOpeningPhaseFromReady()" id="btn-start-play-flow">
+                        <i class="fa-solid fa-gamepad"></i> Bắt đầu khui túi mù
+                    </button>
+                </div>
+            </section>
+
+            <!-- VIEW 7: MÀN HÌNH BÀN CHƠI CHÍNH & MÀN KẾT QUẢ (GAME VIEW) -->
+            <section id="view-game" class="app-view">
+                <!-- PHẦN A: BÀN CHƠI KHUI Ô -->
+                <div id="game-play-section">
+                    <div class="card" style="padding: 16px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border); padding-bottom: 10px; margin-bottom: 12px;">
+                            <h2 id="board-game-title" style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 800; color: var(--primary);">Đêm Hội Vui Vẻ</h2>
+                            <span class="badge" id="badge-play-mode" style="background: var(--primary-soft); color: var(--primary); font-size: 0.72rem; padding: 4px 8px; margin:0;">Chế độ: Lượt</span>
+                        </div>
+
+                        <!-- Chú giải Legend người chơi -->
+                        <div id="players-legend-list" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px;">
+                            <!-- Legend -->
+                        </div>
+
+                        <!-- Tiến trình khui ô -->
+                        <div style="height: 6px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 6px;">
+                            <div id="board-progress-bar" style="height: 100%; width: 0%; background: var(--primary); transition: width 0.25s;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-bottom: 10px;">
+                            <span id="board-progress-text">Đã mở: 0/12 ô (0%)</span>
+                            <span id="board-remaining-text">Còn lại: 12 ô</span>
+                        </div>
+                    </div>
+
+                    <!-- Panel hướng dẫn lượt khui -->
+                    <div class="turn-indicator-panel">
+                        <div class="active-player-avatar" id="active-player-avatar">M</div>
+                        <div class="turn-panel-info">
+                            <span class="turn-number-label">LƯỢT KHUI SỐ <span id="board-turn-num">1</span></span>
+                            <h3 id="turn-indicator-text">Đến lượt My Lan chơi</h3>
+                            <p class="turn-action-desc" id="turn-action-desc-text">Hãy chọn một túi mù trong khu vực của người khác để mở.</p>
+                        </div>
+                        <button class="btn btn-tiny btn-danger hidden" id="btn-end-turn-free" onclick="requestEndTurnFreeMode()">Kết thúc lượt</button>
+                    </div>
+
+                    <!-- Grid Board túi mù -->
+                    <div class="game-grid-container-wrapper" style="margin-top: 20px;">
+                        <div class="scroll-gradient-indicator" id="scroll-gradient-indicator"></div>
+                        <div class="scroll-helper-text" id="scroll-helper-text">Cuộn ngang <i class="fa-solid fa-angles-right"></i></div>
+                        
+                        <div id="game-grid" class="game-grid-container">
+                            <!-- Board các Player Zones được JS render -->
+                        </div>
+                    </div>
+
+                    <!-- Nhật ký khui lượt mới -->
+                    <div class="card" id="board-history-section" style="margin-top: 20px; padding: 18px;">
+                        <h4 style="font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; border-bottom: 1px dashed var(--border); padding-bottom: 6px;"><i class="fa-solid fa-clock-rotate-left"></i> Nhật ký khui quà gần nhất:</h4>
+                        <ul id="board-history-list" style="list-style: none; font-size: 0.8rem; line-height: 1.6; max-height: 120px; overflow-y: auto;">
+                            <!-- Logs -->
+                        </ul>
+                    </div>
+
+                    <!-- Nút tạm dừng / hủy ván -->
+                    <div class="board-controls-bar">
+                        <button class="btn btn-secondary-light btn-icon" onclick="pauseCurrentGame(); navigateTo('home');" title="Tạm dừng game để sau chơi tiếp">
+                            <i class="fa-solid fa-pause"></i> Tạm dừng ván chơi
+                        </button>
+                        <button class="btn btn-danger-light btn-icon" onclick="if(confirm('Bạn có chắc muốn hủy ván đấu đang diễn ra này không?')){cancelCurrentGame(); navigateTo('home');}" title="Hủy ván chơi">
+                            <i class="fa-solid fa-xmark"></i> Hủy ván đấu
+                        </button>
+                    </div>
+                </div>
+
+                <!-- PHẦN B: MÀN HÌNH KẾT QUẢ CUỐI VÁN -->
+                <div id="game-result-section" class="card text-center hidden">
+                    
+                    <!-- Chúc mừng chế độ thường -->
+                    <div id="normal-end-trophy" class="winner-crown-wrapper">
+                        <i class="fa-solid fa-trophy winner-crown-icon" style="color: #f1c40f;"></i>
+                    </div>
+                    <h2 id="normal-end-title" style="font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 6px;">Hoàn thành ván chơi!</h2>
+                    <p id="normal-end-subtitle" class="end-subtitle" style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 20px;"></p>
+
+                    <!-- Chúc mừng chế độ tìm câu nói (Winner) -->
+                    <div id="secret-winner-card" class="secret-winner-card hidden">
+                        <div class="winner-crown-wrapper">
+                            <i class="fa-solid fa-crown winner-crown-icon"></i>
+                        </div>
+                        <h2 class="winner-title"><span id="secret-winner-name">My Lan</span> Chiến Thắng!</h2>
+                        <p class="winner-desc">Đã tìm thấy câu nói bí mật của <strong id="secret-loser-name">Phuc Bang</strong> ở túi mù số <strong id="secret-box-num">6</strong>!</p>
+                        
+                        <div class="winner-sentence-box">
+                            <i class="fa-solid fa-quote-left quote-icon-left"></i>
+                            <p id="secret-winner-sentence">"..."</p>
+                            <i class="fa-solid fa-quote-right quote-icon-right"></i>
+                        </div>
+                    </div>
+
+                    <!-- Bảng thống kê khui ô -->
+                    <div class="grid-summary" style="margin-bottom: 25px;">
+                        <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; border-bottom: 1px dashed var(--border); padding-bottom: 6px;"><i class="fa-solid fa-chart-simple"></i> Số lượng ô khui của từng người chơi:</h4>
+                        <div id="player-stats-list" class="player-names-grid">
+                            <!-- Stats list -->
+                        </div>
+                    </div>
+
+                    <!-- Thống kê loại ô đã khui (chỉ chế độ thường) -->
+                    <div class="grid-summary" id="types-stats-container" style="margin-bottom: 25px; text-align: left;">
+                        <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; border-bottom: 1px dashed var(--border); padding-bottom: 6px;"><i class="fa-solid fa-box-open"></i> Phân loại túi mù đã mở:</h4>
+                        <div id="types-stats-grid" style="display: flex; gap: 8px; flex-wrap: wrap; font-size: 0.78rem;">
+                            <!-- Type stat pills -->
+                        </div>
+                    </div>
+
+                    <!-- Nút bấm chơi lại / Tạo mới -->
+                    <div style="display: flex; flex-direction: column; gap: 12px; max-width: 400px; margin: 0 auto;">
+                        <!-- Buttons chế độ tìm câu nói -->
+                        <button class="btn btn-primary btn-large hidden" id="btn-replay-new-position" onclick="restartGameWithNewPositions()">
+                            <i class="fa-solid fa-shuffle"></i> Giữ câu nói - Xáo trộn ô
+                        </button>
+                        <button class="btn btn-secondary btn-large hidden" id="btn-new-sentences" onclick="restartGameWithNewSentences()">
+                            <i class="fa-solid fa-pencil"></i> Viết câu nói bí mật mới
+                        </button>
+                        
+                        <!-- Buttons chế độ thường -->
+                        <button class="btn btn-primary btn-large" id="btn-replay-old-content" onclick="restartWithSameContent()">
+                            <i class="fa-solid fa-arrow-rotate-right"></i> Khui lại túi mù này
+                        </button>
+                        <button class="btn btn-secondary btn-large" id="btn-create-new-content" onclick="restartWithNewContent()">
+                            <i class="fa-solid fa-circle-plus"></i> Thay đổi nội dung mới
+                        </button>
+                        
+                        <button class="btn btn-danger-light btn-large" onclick="archiveCompletedGame(); navigateTo('home');">
+                            <i class="fa-solid fa-house"></i> Quay về trang chủ
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 8: TRANG LỊCH SỬ VÁN CHƠI (HISTORY VIEW) -->
+            <section id="view-history" class="app-view">
+                <div class="card">
+                    <h2 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Ván Đấu</h2>
+                    
+                    <!-- Lọc danh sách -->
+                    <div class="history-filters">
+                        <button class="filter-btn active" onclick="filterHistory('all')">Tất cả</button>
+                        <button class="filter-btn" onclick="filterHistory('playing')">Đang chơi</button>
+                        <button class="filter-btn" onclick="filterHistory('completed')">Đã hoàn thành</button>
+                        <button class="filter-btn" onclick="filterHistory('cancelled')">Đã hủy</button>
+                    </div>
+
+                    <!-- Danh sách Grid các ván -->
+                    <div id="history-list-grid" class="history-list-grid">
+                        <!-- JS render -->
+                    </div>
+
+                    <!-- Container chi tiết ván cụ thể (Khi click xem chi tiết) -->
+                    <div id="history-details-container" class="hidden">
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border); padding-bottom: 10px; margin-bottom: 15px;">
+                            <h3 id="history-detail-title" style="font-family: 'Outfit', sans-serif; font-size: 1.3rem; font-weight: 800; color: var(--primary);">Ván: Đêm Hội Vui Vẻ</h3>
+                            <button class="btn btn-tiny btn-secondary" onclick="goBackToHistoryList()"><i class="fa-solid fa-arrow-left"></i> Quay lại</button>
+                        </div>
+                        
+                        <div id="history-detail-info" style="line-height: 1.6; font-size: 0.9rem; margin-bottom: 15px;">
+                            <!-- Info -->
+                        </div>
+
+                        <!-- Xem lại câu bí mật (nếu có) -->
+                        <div id="history-reveal-container" class="hidden" style="margin-bottom: 15px;">
+                            <!-- Button xem câu nói -->
+                        </div>
+
+                        <div class="grid-summary" style="text-align: left;">
+                            <h4 style="font-family: 'Outfit', sans-serif; font-size: 0.92rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">Nhật ký các lượt khui:</h4>
+                            <ul id="history-detail-logs" style="padding-left: 20px; font-size: 0.8rem; line-height: 1.5; max-height: 200px; overflow-y: auto; color: var(--text-secondary);">
+                                <!-- Logs -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 9: TRANG CÀI ĐẶT (SETTINGS VIEW) -->
+            <section id="view-settings" class="app-view">
+                <div class="card">
+                    <h2 class="section-title"><i class="fa-solid fa-gear"></i> Cài Đặt Hệ Thống</h2>
+                    
+                    <!-- PWA Install Row -->
+                    <div class="form-group hidden" id="settings-install-pwa-row" style="background: var(--primary-soft); border: 1.5px dashed var(--primary); padding: 16px; border-radius: 16px; margin-bottom: 20px;">
+                        <h4 style="font-family:'Outfit',sans-serif; color: var(--primary); margin-bottom: 6px;"><i class="fa-solid fa-circle-down"></i> Cài đặt ứng dụng trên thiết bị</h4>
+                        <p style="font-size:0.8rem; color: var(--text-secondary); margin-bottom: 10px;">Cài đặt Túi Mù Bí Mật lên màn hình chính để mở nhanh, hỗ trợ đầy đủ chế độ offline khi không có mạng.</p>
+                        <button class="btn btn-primary" id="btn-install-pwa"><i class="fa-solid fa-download"></i> Cài đặt ngay</button>
+                    </div>
+
+                    <!-- Lựa chọn theme -->
+                    <div class="form-group">
+                        <label for="settings-theme-select"><i class="fa-solid fa-circle-half-stroke"></i> Giao diện (Theme)</label>
+                        <select id="settings-theme-select" onchange="changeSettingsTheme(this.value)">
+                            <option value="light">Chế độ Sáng (Light Mode)</option>
+                            <option value="dark">Chế độ Tối (Dark Mode)</option>
+                            <option value="system" selected>Theo cấu hình hệ thống (System)</option>
+                        </select>
+                    </div>
+
+                    <!-- Toggles âm thanh & hiệu ứng -->
+                    <div class="toggle-options" style="margin-top: 15px; margin-bottom: 25px;">
+                        <div class="toggle-item">
+                            <label class="switch-container">
+                                <input type="checkbox" id="settings-sound-effects" onchange="changeSettingsSound(this.checked)">
+                                <span class="switch-slider"></span>
+                            </label>
+                            <span>Âm thanh phản hồi trò chơi</span>
+                        </div>
+                        <div class="toggle-item">
+                            <label class="switch-container">
+                                <input type="checkbox" id="settings-effects-toggle" onchange="changeSettingsEffects(this.checked)">
+                                <span class="switch-slider"></span>
+                            </label>
+                            <span>Hiệu ứng pháo hoa chúc mừng</span>
+                        </div>
+                    </div>
+
+                    <!-- Quản lý Backup / Xuất nhập dữ liệu -->
+                    <div class="grid-summary" style="text-align: left; margin-bottom: 25px;">
+                        <h4 style="font-family:'Outfit',sans-serif; color: var(--text-primary); margin-bottom: 8px;"><i class="fa-solid fa-database"></i> Sao lưu và Khôi phục dữ liệu</h4>
+                        <p style="font-size:0.78rem; color: var(--text-muted); margin-bottom: 12px;">Bạn có thể tải xuống file dữ liệu để backup lịch sử ván chơi, hoặc khôi phục dữ liệu từ tệp tin sao lưu trước đó.</p>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="btn btn-tiny btn-secondary" onclick="exportAppDataToJSON()"><i class="fa-solid fa-file-export"></i> Xuất file Backup</button>
+                            <label class="btn btn-tiny btn-secondary-light" style="cursor: pointer; margin: 0; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                                <i class="fa-solid fa-file-import"></i> Nhập file Backup
+                                <input type="file" accept=".json" onchange="importAppDataFromJSON(this)" style="display: none;">
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Reset cài đặt gốc -->
+                    <div style="border-top: 1px dashed var(--border); padding-top: 20px;">
+                        <button class="btn btn-danger-light btn-large" onclick="triggerResetAppData()">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Khôi phục cài đặt gốc của App
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 10: TRANG HƯỚNG DẪN CHI TIẾT (HELP VIEW) -->
+            <section id="view-help" class="app-view">
+                <div class="card">
+                    <h2 class="section-title"><i class="fa-solid fa-circle-question"></i> Hướng Dẫn Cách Chơi</h2>
+                    
+                    <div class="history-filters">
+                        <button class="filter-btn active" id="btn-help-tab-normal" onclick="switchHelpTab('normal')">Túi mù thông thường</button>
+                        <button class="filter-btn" id="btn-help-tab-secret" onclick="switchHelpTab('secret')">Tìm câu nói bí mật</button>
+                    </div>
+
+                    <!-- HƯỚNG DẪN CHẾ ĐỘ THƯỜNG -->
+                    <div id="help-tab-normal" class="setup-step-content active" style="text-align: left; line-height: 1.6; font-size: 0.9rem;">
+                        <p style="margin-bottom: 8px;">Đây là chế độ chơi cổ điển giúp mọi người kết nối, trút bầu tâm sự hoặc chịu các hình phạt vui nhộn.</p>
+                        <ul style="padding-left: 20px; margin-bottom: 12px;">
+                            <li><strong>Thiết lập:</strong> Nhập số lượng người chơi (2 - 4 người). Chọn số ô túi mù sở hữu của mỗi người.</li>
+                            <li><strong>Tạo túi mù:</strong> Từng người lần lượt cầm thiết bị để nhập nội dung cho các ô của mình. Có thể tự viết hoặc dùng nút <strong>"Gợi ý"</strong> theo chủ đề.</li>
+                            <li><strong>Khóa nội dung:</strong> Sau khi nhập đủ, nhấn Khóa. Thiết bị được chuyển cho người tiếp theo nhập tiếp. Nội dung sẽ được mã hóa an toàn.</li>
+                            <li><strong>Bắt đầu chơi:</strong> Trên bàn cờ sẽ hiện các ô túi mù của mọi người xếp cạnh nhau. Lần lượt từng người sẽ chọn mở ô túi mù của <strong>người khác</strong> (Không được tự khui ô của chính mình).</li>
+                            <li><strong>Thực hiện:</strong> Khi ô được mở ra, người chơi phải thực hiện câu hỏi hoặc thử thách ghi trong ô đó.</li>
+                            <li><strong>Kết thúc:</strong> Trò chơi kết thúc khi toàn bộ túi mù trên bàn cờ được khui sạch.</li>
+                        </ul>
+                    </div>
+
+                    <!-- HƯỚNG DẪN CHẾ ĐỘ TÌM CÂU NÓI BÍ MẬT -->
+                    <div id="help-tab-secret" class="setup-step-content" style="text-align: left; line-height: 1.6; font-size: 0.9rem;">
+                        <p style="margin-bottom: 8px;">Chế độ đối kháng gay cấn dành riêng cho 2 người chơi (ví dụ: A và B).</p>
+                        <ul style="padding-left: 20px; margin-bottom: 12px;">
+                            <li><strong>Ý tưởng:</strong> Mỗi người chỉ được viết đúng 1 câu duy nhất (câu nói lầy lội, hình phạt hoặc lời tỏ tình...).</li>
+                            <li><strong>Giấu câu nói:</strong> A tự chọn 1 ô bất kỳ trong khu vực của mình để giấu câu nói đó. Các ô còn lại sẽ trống. B làm tương tự.</li>
+                            <li><strong>Chơi game:</strong> A sẽ mở các ô trong khu vực của B. B mở các ô trong khu vực của A để tìm kiếm.</li>
+                            <li><strong>Quyết định chiến thắng:</strong> Ngay khi một người mở trúng ô chứa câu nói bí mật của đối thủ, trò chơi sẽ <strong>dừng lại ngay lập tức</strong>.</li>
+                            <li>Người khui trúng ô bí mật đó sẽ chiến thắng ván chơi và được tôn vinh!</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- BOTTOM NAVIGATION (CHỈ HIỆN TRÊN DI ĐỘNG Ở TRẠNG THÁI KHÔNG NHẠY CẢM) -->
+        <nav class="bottom-navigation">
+            <button class="nav-item active" data-route="home">
+                <i class="fa-solid fa-house"></i> Trang chủ
+            </button>
+            <button class="nav-item" data-route="game">
+                <i class="fa-solid fa-circle-play"></i> Ván chơi
+            </button>
+            <button class="nav-item" data-route="history">
+                <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử
+            </button>
+            <button class="nav-item" data-route="settings">
+                <i class="fa-solid fa-gear"></i> Cài đặt
+            </button>
+            <button class="nav-item" data-route="help">
+                <i class="fa-solid fa-circle-question"></i> Trợ giúp
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- ==================== MODALS HỆ THỐNG DÙNG CHUNG ==================== -->
+
+    <!-- 1. MODAL HIỂN THỊ NỘI DUNG TÚI MÙ (3D FLIP) -->
+    <div id="box-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-type-label">
+        <div class="modal-card">
+            <div class="card-inner">
+                <!-- Mặt trước: Animation hộp quà bập bùng -->
+                <div class="card-front">
+                    <div class="box-opening-animation">
+                        <div class="box-icon-large"><i class="fa-solid fa-gift"></i></div>
+                        <h3 style="font-family:'Outfit',sans-serif; font-size: 1.3rem; font-weight:800; color: var(--primary);">Đang khui túi mù...</h3>
+                        <p style="font-size:0.85rem; color: var(--text-secondary);">Nhìn thẳng màn hình để xem bí mật!</p>
+                    </div>
+                </div>
+                <!-- Mặt sau: Nội dung câu hỏi/thử thách được khui thực sự -->
+                <div class="card-back">
+                    <div class="modal-header">
+                        <span id="modal-owner-badge" class="owner-badge">Túi mù của Lan</span>
+                        <div class="content-type-icon-wrapper">
+                            <i id="modal-type-icon" class="fa-solid fa-gift"></i>
+                        </div>
+                    </div>
+                    <div class="modal-body text-center">
+                        <span id="modal-type-label" class="type-label">Món quà may mắn</span>
+                        <div class="box-content-scroll" style="margin-top: 15px;">
+                            <p id="modal-secret-content">Nội dung...</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <p id="modal-action-tip" class="action-tip">Người khui: Phúc Bằng</p>
+                        <button id="btn-close-modal" class="btn btn-primary btn-large" style="width: 100%; margin-top: 10px;">
+                            Đã hiểu và Tiếp tục <i class="fa-solid fa-circle-check"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. MODAL XÁC NHẬN KHÓA Ô CHƠI (CONFIRM LOCK) -->
+    <div id="confirm-lock-modal" class="modal-overlay" role="dialog" aria-modal="true">
+        <div class="modal-card card" style="background: var(--surface-solid); border: 2px solid var(--border); padding: 25px;">
+            <h3 id="confirm-lock-title" style="font-family:'Outfit',sans-serif; font-weight:800; font-size:1.35rem; color: var(--primary); margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-circle-question"></i> Xác nhận khóa túi mù?
+            </h3>
+            <p id="confirm-lock-body-text" style="font-size: 0.88rem; line-height: 1.5; color: var(--text-secondary); margin-bottom: 20px;">
+                Sau khi khóa, bạn sẽ không thể chỉnh sửa hay xem lại nội dung này.
+            </p>
+            
+            <div id="confirm-lock-stats-box" class="grid-summary text-center" style="margin-bottom: 20px; padding: 10px;">
+                <span style="font-size:0.75rem; font-weight:700; color: var(--text-muted);">Số ô đã điền nội dung:</span>
+                <h2 id="confirm-lock-stats" style="font-family:'Outfit',sans-serif; font-size: 1.6rem; font-weight:800; color: var(--primary); margin-top:2px;">6/6</h2>
+            </div>
+
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button id="btn-confirm-lock-no" class="btn btn-secondary"><i class="fa-solid fa-xmark"></i> Hủy</button>
+                <button id="btn-confirm-lock-yes" class="btn btn-primary"><i class="fa-solid fa-lock"></i> Đồng ý khóa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. MODAL HƯỚNG DẪN NHANH (QUICK GUIDE) -->
+    <div id="guide-modal" class="modal-overlay" role="dialog" aria-modal="true">
+        <div class="modal-card guide-modal-card">
+            <div class="guide-glass-card">
+                <button id="btn-close-guide" class="btn-close-guide" title="Đóng hướng dẫn"><i class="fa-solid fa-xmark"></i></button>
+                <div class="guide-modal-header text-center">
+                    <i class="fa-solid fa-circle-question guide-icon-large"></i>
+                    <h2>Luật Chơi Túi Mù</h2>
+                </div>
+                <div class="guide-modal-body">
+                    <div class="guide-section">
+                        <h3><i class="fa-solid fa-pen-ruler"></i> Bước 1: Thiết lập & Tạo nội dung</h3>
+                        <p>Mỗi người chơi lần lượt cầm thiết bị để nhập thử thách/bí mật hoặc món quà vào các ô túi mù của riêng mình. Ở chế độ đối kháng, hãy viết 1 câu bí ẩn duy nhất và ghim giấu vào 1 ô bí mật.</p>
+                    </div>
+                    <div class="guide-section">
+                        <h3><i class="fa-solid fa-user-shield"></i> Bước 2: Bảo mật & Chuyển giao</h3>
+                        <p>Nội dung sau khi viết sẽ được khóa và mã hóa. Hãy chuyển giao thiết bị cho đối phương. Tuyệt đối giữ bí mật vị trí ô đã chọn!</p>
+                    </div>
+                    <div class="guide-section">
+                        <h3><i class="fa-solid fa-gift"></i> Bước 3: Khui túi mù</h3>
+                        <p>Người chơi sẽ click chọn mở ô túi mù của đối thủ. Không được tự mở ô của mình. Khi mở trúng ô nào, người mở phải thực hiện yêu cầu ghi trong đó.</p>
+                        <p class="guide-tip"><strong>Mẹo:</strong> Trong chế độ đối kháng, chỉ cần khui trúng ô bí mật chứa câu nói của đối thủ là bạn thắng cuộc ngay lập tức!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. TOAST NOTIFICATION HỆ THỐNG -->
+    <div id="toast-notification" class="toast hidden" role="alert" aria-live="assertive">
+        <i class="fa-solid fa-circle-info"></i>
+        <span id="toast-message">Thông báo...</span>
+    </div>
+
+    <!-- Canvas Confetti Library (Hỗ trợ pháo hoa chúc mừng) -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <!-- JS MODULES -->
+    <script src="./js/constants.js"></script>
+    <script src="./js/ui.js"></script>
+    <script src="./js/storage.js"></script>
+    <script src="./js/game-state.js"></script>
+    <script src="./js/router.js"></script>
+    <script src="./js/pwa.js"></script>
+    <script src="./js/app.js"></script>
+</body>
+</html>
