@@ -1,3 +1,11 @@
+const { setGlobalOptions } = require("firebase-functions/v2");
+
+setGlobalOptions({
+  region: "asia-southeast1",
+  invoker: "public",
+  enforceAppCheck: false
+});
+
 const { initializeApp } = require("firebase-admin/app");
 initializeApp();
 
