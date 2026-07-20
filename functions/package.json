@@ -2,7 +2,7 @@
   "name": "tui-mu-bi-mat-functions",
   "private": true,
   "main": "src/index.js",
-  "engines": { "node": "20" },
+  "engines": { "node": "22" },
   "scripts": {
     "lint": "eslint src",
     "serve": "firebase emulators:start --only functions,firestore,auth",

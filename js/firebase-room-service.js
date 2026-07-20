@@ -8,7 +8,7 @@ const ONLINE_ERROR_MESSAGES = {
     GAME_NOT_PLAYING: "Ván chơi chưa bắt đầu.", GAME_ALREADY_COMPLETED: "Ván chơi đã kết thúc.",
     CONTENT_NOT_LOCKED: "Bạn chưa nhập đủ nội dung.", PLAYERS_NOT_READY: "Cần đủ hai người sẵn sàng.",
     INVALID_GAME_PHASE: "Phòng không ở đúng giai đoạn.", AUTH_REQUIRED: "Không thể xác thực người chơi.",
-    DUPLICATE_REQUEST: "Yêu cầu này đã được xử lý.", NETWORK_ERROR: "Không thể kết nối Firebase."
+    DUPLICATE_REQUEST: "Yêu cầu này đã được xử lý.", NETWORK_ERROR: "Không thể tạo phòng online. Máy chủ chưa phản hồi."
 };
 
 function normalizeRoomCode(value) {

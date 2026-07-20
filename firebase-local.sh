@@ -2,7 +2,7 @@
 set -eu
 
 PROJECT_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-NODE_DIR="$PROJECT_ROOT/.tools/node-v20.20.2-darwin-arm64"
+NODE_DIR="$PROJECT_ROOT/.tools/node-v22.23.1-darwin-arm64"
 NODE_BIN="$NODE_DIR/bin/node"
 FIREBASE_BIN="$PROJECT_ROOT/.tools/firebase-cli/node_modules/firebase-tools/lib/bin/firebase.js"
 
