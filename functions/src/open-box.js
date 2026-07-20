@@ -16,13 +16,21 @@ const openRoomBox=onCall({region:REGION,cors:true,enforceAppCheck:false},async r
     tx.create(rRef.collection("actions").doc(),{type:"box-opened",playerUid:uid,ownerUid:box.ownerUid,boxId:requestedBoxId,result,roundNumber:room.roundNumber,createdAt:now});
     if(finished)tx.update(rRef,{status:"completed",phase:"result",winnerUid:uid,revealedContent:content,completedAt:now,updatedAt:now});
     else if(room.gameMode==="normal"){
-      const contentBoxIds=new Set();
-      secretSnaps.forEach((snap,index)=>{if(!snap.exists)return;const ownerUid=playersSnap.docs[index].id;(snap.data().encryptedContent||[]).forEach(item=>contentBoxIds.add(makeBoxId(ownerUid,item.boxNumber)));});
-      const remainingContent=boxesSnap.docs.filter(doc=>doc.id!==requestedBoxId&&!doc.data().isOpened&&contentBoxIds.has(doc.id));
-      if(remainingContent.length===0){tx.update(rRef,{status:"completed",phase:"result",winnerUid:null,currentTurnUid:null,completedAt:now,updatedAt:now});finished=true;}
-      else{const remainingPublic=boxesSnap.docs.filter(doc=>doc.id!==requestedBoxId&&!doc.data().isOpened).map(doc=>doc.data());const opponentCanOpen=remainingPublic.some(item=>item.ownerUid===uid);tx.update(rRef,{currentTurnUid:opponentCanOpen?(opponent?.id||uid):uid,turnNumber:FieldValue.increment(1),updatedAt:now});}
+      // Mỗi người đua mở hết các túi có nội dung của đối phương. Kết thúc ngay
+      // khi người đang chơi mở túi nội dung cuối cùng trong khu vực vừa chọn.
+      const ownerContentBoxIds=new Set((secret.encryptedContent||[]).map(item=>makeBoxId(box.ownerUid,item.boxNumber)));
+      const openedContentBox=ownerContentBoxIds.has(requestedBoxId);
+      const remainingOwnerContent=boxesSnap.docs.filter(doc=>doc.id!==requestedBoxId&&!doc.data().isOpened&&ownerContentBoxIds.has(doc.id));
+      if(openedContentBox&&remainingOwnerContent.length===0){
+        tx.update(rRef,{status:"completed",phase:"result",winnerUid:uid,currentTurnUid:null,completedAt:now,updatedAt:now});
+        finished=true;
+      }else{
+        const remainingPublic=boxesSnap.docs.filter(doc=>doc.id!==requestedBoxId&&!doc.data().isOpened).map(doc=>doc.data());
+        const opponentCanOpen=remainingPublic.some(item=>item.ownerUid===uid);
+        tx.update(rRef,{currentTurnUid:opponentCanOpen?(opponent?.id||uid):uid,turnNumber:FieldValue.increment(1),updatedAt:now});
+      }
     }else tx.update(rRef,{currentTurnUid:opponent?.id||null,turnNumber:FieldValue.increment(1),updatedAt:now});
-    return{success:true,result,content,gameFinished:finished,winnerUid:finished&&room.gameMode==="find-secret-sentence"?uid:null,ownerName:playersSnap.docs.find(d=>d.id===box.ownerUid)?.data().displayName||"đối phương"};
+    return{success:true,result,content,gameFinished:finished,winnerUid:finished?uid:null,ownerName:playersSnap.docs.find(d=>d.id===box.ownerUid)?.data().displayName||"đối phương"};
   });
 });
 module.exports={openRoomBox};
