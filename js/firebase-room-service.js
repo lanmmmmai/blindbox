@@ -6,7 +6,7 @@ const ONLINE_ERROR_MESSAGES = {
     NOT_HOST: "Chỉ chủ phòng được thực hiện thao tác này.", NOT_YOUR_TURN: "Chưa đến lượt của bạn.",
     BOX_ALREADY_OPENED: "Túi này đã được mở.", CANNOT_OPEN_OWN_BOX: "Bạn không thể mở túi của chính mình.",
     GAME_NOT_PLAYING: "Ván chơi chưa bắt đầu.", GAME_ALREADY_COMPLETED: "Ván chơi đã kết thúc.",
-    CONTENT_NOT_LOCKED: "Bạn chưa nhập đủ nội dung.", PLAYERS_NOT_READY: "Cần đủ hai người sẵn sàng.",
+    CONTENT_NOT_LOCKED: "Bạn chưa nhập đủ nội dung.", INVALID_CONTENT_COUNT: "Số túi đã chọn không hợp lệ.", PLAYERS_NOT_READY: "Cần đủ hai người sẵn sàng.",
     INVALID_GAME_PHASE: "Phòng không ở đúng giai đoạn.", AUTH_REQUIRED: "Không thể xác thực người chơi.",
     DUPLICATE_REQUEST: "Yêu cầu này đã được xử lý.", NETWORK_ERROR: "Không thể tạo phòng online. Máy chủ chưa phản hồi."
 };
@@ -32,11 +32,11 @@ const roomService = {
     getState: roomCode => callFirebaseFunction("getRoomState", { roomCode: normalizeRoomCode(roomCode) }),
     setReady: (roomCode, ready) => callFirebaseFunction("setPlayerReady", { roomCode, ready }),
     start: roomCode => callFirebaseFunction("startRoomGame", { roomCode }),
-    saveContent: async (roomCode, items) => {
+    saveContent: async (roomCode, items, selectedBagCount = items.length) => {
         const secret = items.find(item => item.isSecret);
         return secret
             ? callFirebaseFunction("lockPlayerSecret", { roomCode, sentence: secret.content, selectedBoxNumber: secret.boxNumber })
-            : callFirebaseFunction("lockNormalContent", { roomCode, items });
+            : callFirebaseFunction("lockNormalContent", { roomCode, selectedBagCount, items });
     },
     lockContent: async () => ({ success: true }),
     openBox: (roomCode, boxId, requestId) => callFirebaseFunction("openRoomBox", { roomCode, boxId, requestId }),

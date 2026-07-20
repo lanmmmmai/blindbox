@@ -4,9 +4,68 @@ const onlineGame = {
     loading: false,
     opening: false,
     refreshTimer: null,
-    selectedSecretBox: null
+    selectedSecretBox: null,
+    renderedWritingKey: null
 };
 let onlineBoxModalActive = false;
+let onlineDraftSaveTimer = null;
+const onlineDraftState = {
+    roomCode: null,
+    playerUid: null,
+    selectedBagCount: 1,
+    selectedBagIds: [],
+    contents: {},
+    contentTypes: {},
+    updatedAt: null
+};
+
+function getOnlineDraftStorageKey(roomCode, playerUid) {
+    return `onlineDraft:${roomCode}:${playerUid}`;
+}
+
+function resetOnlineDraft(state) {
+    const roomCode = state.room.roomCode;
+    const playerUid = state.me.id;
+    if (onlineDraftState.roomCode === roomCode && onlineDraftState.playerUid === playerUid) return;
+    const maximum = state.room.boxesPerPlayer;
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(getOnlineDraftStorageKey(roomCode, playerUid))); } catch (_) {}
+    onlineDraftState.roomCode = roomCode;
+    onlineDraftState.playerUid = playerUid;
+    onlineDraftState.selectedBagCount = Math.max(1, Math.min(Number(saved?.selectedBagCount) || maximum, maximum));
+    onlineDraftState.selectedBagIds = Array.isArray(saved?.selectedBagIds)
+        ? saved.selectedBagIds.map(Number).filter(n => Number.isInteger(n) && n >= 1 && n <= maximum).slice(0, onlineDraftState.selectedBagCount)
+        : [];
+    onlineDraftState.contents = saved?.contents && typeof saved.contents === "object" ? saved.contents : {};
+    onlineDraftState.contentTypes = saved?.contentTypes && typeof saved.contentTypes === "object" ? saved.contentTypes : {};
+    onlineDraftState.updatedAt = saved?.updatedAt || null;
+    onlineGame.selectedSecretBox = Number(saved?.selectedSecretBox) || null;
+}
+
+function scheduleOnlineDraftSave() {
+    clearTimeout(onlineDraftSaveTimer);
+    onlineDraftSaveTimer = setTimeout(() => {
+        if (!onlineDraftState.roomCode || !onlineDraftState.playerUid) return;
+        onlineDraftState.updatedAt = Date.now();
+        localStorage.setItem(getOnlineDraftStorageKey(onlineDraftState.roomCode, onlineDraftState.playerUid), JSON.stringify({
+            selectedBagCount: onlineDraftState.selectedBagCount,
+            selectedBagIds: onlineDraftState.selectedBagIds,
+            contents: onlineDraftState.contents,
+            contentTypes: onlineDraftState.contentTypes,
+            selectedSecretBox: onlineGame.selectedSecretBox,
+            updatedAt: onlineDraftState.updatedAt
+        }));
+    }, 400);
+}
+
+function clearOnlineDraft() {
+    clearTimeout(onlineDraftSaveTimer);
+    if (onlineDraftState.roomCode && onlineDraftState.playerUid) {
+        localStorage.removeItem(getOnlineDraftStorageKey(onlineDraftState.roomCode, onlineDraftState.playerUid));
+    }
+    onlineDraftState.roomCode = null;
+    onlineDraftState.playerUid = null;
+}
 
 function onlineEscape(value) {
     const node = document.createElement("div");
@@ -129,12 +188,13 @@ function setOnlineConnection(status) {
     onlineGame.connection = status;
     const pill = document.getElementById("online-connection-pill");
     const banner = document.getElementById("online-connection-banner");
-    if (!pill || !banner) return;
+    if (!pill || !banner) { updateOnlineWritingUI(); return; }
     const labels = { connected: "Đã kết nối", reconnecting: "Đang kết nối lại", disconnected: "Mất kết nối" };
     pill.className = `online-connection-pill ${status}`;
     pill.innerHTML = `<span></span> ${labels[status] || "Đang đồng bộ"}`;
     banner.className = `connection-banner ${status === "connected" ? "hidden" : "danger"}`;
     banner.textContent = status === "reconnecting" ? "Kết nối đang bị gián đoạn. Game sẽ tiếp tục khi kết nối được khôi phục." : "Mất kết nối với phòng. Đang thử kết nối lại...";
+    updateOnlineWritingUI();
 }
 
 function renderOnlineState() {
@@ -142,9 +202,16 @@ function renderOnlineState() {
     if (!state) return;
     document.getElementById("online-room-code").textContent = state.room.roomCode;
     document.getElementById("online-room-title-display").textContent = state.room.title;
+    const writingPhase = state.room.phase === "writing" || state.room.phase === "waiting-for-content";
+    const writingKey = `${state.room.roomCode}:${state.room.gameMode}:${state.me.id}:${state.me.hasLockedContent}`;
+    if (writingPhase && onlineGame.renderedWritingKey === writingKey) {
+        updateOnlineWritingUI();
+        setOnlineConnection(onlineGame.connection);
+        return;
+    }
     ["online-lobby-panel","online-writing-panel","online-ready-panel","online-game-panel","online-result-panel"].forEach(id => document.getElementById(id).classList.add("hidden"));
     if (state.room.phase === "lobby") renderOnlineLobby();
-    else if (state.room.phase === "writing" || state.room.phase === "waiting-for-content") renderOnlineWriting();
+    else if (writingPhase) { onlineGame.renderedWritingKey = writingKey; renderOnlineWriting(); }
     else if (state.room.phase === "ready") renderOnlineReady();
     else if (state.room.phase === "opening") renderOnlineBoard();
     else renderOnlineResult();
@@ -188,29 +255,151 @@ window.removeOnlinePlayer = async function(playerId) { if (confirm("Xóa ngườ
 function renderOnlineWriting() {
     const panel = document.getElementById("online-writing-panel"); panel.classList.remove("hidden"); const s=onlineGame.state;
     if (s.me.hasLockedContent) {
+        clearOnlineDraft();
         const opponent=s.players.find(p=>p.id!==s.me.id);
         panel.innerHTML=`<div class="online-wait-state"><i class="fa-solid fa-lock"></i><h3>Nội dung của bạn đã được khóa</h3><p>${opponent?.hasLockedContent ? "Cả hai đã hoàn thành. Đang chuyển sang bước tiếp theo..." : `Đang chờ ${onlineEscape(opponent?.displayName || "đối phương")} hoàn thành...`}</p></div><div class="online-players">${onlinePlayersHtml()}</div>`;
         return;
     }
+    resetOnlineDraft(s);
     const boxes=Array.from({length:s.room.boxesPerPlayer},(_,i)=>i+1);
     if(s.room.gameMode==="find-secret-sentence"){
-        panel.innerHTML=`<div class="online-section-title"><h3>Viết câu bí mật của bạn</h3><span>Chỉ thiết bị này nhìn thấy trước khi khóa</span></div><div class="form-group"><textarea id="online-secret-content" maxlength="200" placeholder="Nhập một câu bí mật..."></textarea></div><h4>Chọn một ô để giấu</h4><div class="online-secret-picker">${boxes.map(n=>`<button class="picker-box" data-number="${n}" onclick="selectOnlineSecretBox(${n})">Túi ${n}</button>`).join("")}</div><p id="online-writing-error" class="inline-error hidden"></p><button class="btn btn-primary btn-large" onclick="lockOnlineContent()"><i class="fa-solid fa-lock"></i> Khóa câu bí mật</button>`;
+        panel.innerHTML=`<div class="online-section-title"><h3>Viết câu bí mật của bạn</h3><span>Chỉ thiết bị này nhìn thấy trước khi khóa</span></div><div class="form-group"><textarea id="online-secret-content" data-online-secret-input maxlength="200" placeholder="Nhập một câu bí mật...">${onlineEscape(onlineDraftState.contents.secret || "")}</textarea><small id="online-secret-counter">${String(onlineDraftState.contents.secret || "").length}/200</small></div><h4>Chọn một ô để giấu</h4><div class="online-secret-picker">${boxes.map(n=>`<button class="picker-box ${onlineGame.selectedSecretBox===n?"selected":""}" data-number="${n}" onclick="selectOnlineSecretBox(${n})">Túi ${n}</button>`).join("")}</div><p id="online-writing-error" class="inline-error hidden"></p><button id="online-lock-button" class="btn btn-primary btn-large" onclick="lockOnlineContent()"><i class="fa-solid fa-lock"></i> Khóa câu bí mật</button>`;
     } else {
-        panel.innerHTML=`<div class="online-section-title"><h3>Nhập túi mù của bạn</h3><span>Đối phương không nhận được nội dung này</span></div><div class="online-content-grid">${boxes.map(n=>`<div class="input-box-card"><strong>Túi mù ${n}</strong><textarea id="online-content-${n}" maxlength="150" placeholder="Nhập câu hỏi, thử thách hoặc món quà..."></textarea><select id="online-type-${n}"><option value="question">Câu hỏi</option><option value="dare">Thử thách</option><option value="gift">Món quà</option><option value="punish">Hình phạt</option></select></div>`).join("")}</div><p id="online-writing-error" class="inline-error hidden"></p><button class="btn btn-primary btn-large" onclick="lockOnlineContent()"><i class="fa-solid fa-lock"></i> Khóa & hoàn thành</button>`;
+        panel.innerHTML=`<div class="online-section-title"><h3>${onlineEscape(s.me.displayName)} đang tạo túi mù</h3><span>Đối phương không nhận được nội dung này</span></div><div class="online-bag-count"><span>Số túi bạn muốn dùng</span><div><button type="button" data-count-delta="-1">−</button><strong id="online-selected-count-value">${onlineDraftState.selectedBagCount}</strong><button type="button" data-count-delta="1">+</button></div><p id="online-selected-progress"></p><p id="online-writing-progress"></p></div><div class="online-writing-grid">${boxes.map(n=>renderOnlineWritingCard(n)).join("")}</div><p id="online-writing-error" class="inline-error hidden"></p><button id="online-lock-button" class="btn btn-primary btn-large" onclick="lockOnlineContent()"><i class="fa-solid fa-lock"></i> Khóa & Lưu túi mù</button>`;
     }
+    bindOnlineWritingEvents(panel);
+    updateOnlineWritingUI();
 }
 
-window.selectOnlineSecretBox=function(number){onlineGame.selectedSecretBox=number;document.querySelectorAll(".online-secret-picker .picker-box").forEach(b=>b.classList.toggle("selected",Number(b.dataset.number)===number));};
+function renderOnlineWritingCard(number) {
+    const selected = onlineDraftState.selectedBagIds.includes(number);
+    const content = String(onlineDraftState.contents[number] || "");
+    const type = onlineDraftState.contentTypes[number] || "question";
+    return `<article class="input-box-card online-writing-card ${selected ? "selected-empty" : "not-selected input-box-disabled"}" data-online-card="${number}"><div class="input-box-header"><strong>Túi mù ${number}</strong><button type="button" class="btn btn-mini ${selected ? "btn-primary" : "btn-secondary"}" data-toggle-online-bag="${number}">${selected ? "✓ Đã chọn" : "+ Chọn túi"}</button></div><textarea data-online-bag-input data-bag-id="${number}" maxlength="150" ${selected ? "" : "disabled"} placeholder="Nhập câu hỏi, thử thách, món quà hoặc lời nhắn...">${onlineEscape(content)}</textarea><small data-counter-for="${number}">${content.length}/150</small><select data-online-bag-type data-bag-id="${number}" ${selected ? "" : "disabled"}><option value="question" ${type==="question"?"selected":""}>Câu hỏi</option><option value="dare" ${type==="dare"?"selected":""}>Thử thách</option><option value="gift" ${type==="gift"?"selected":""}>Món quà</option><option value="punish" ${type==="punish"?"selected":""}>Lời nhắn</option></select><span class="online-card-status"></span></article>`;
+}
+
+function bindOnlineWritingEvents(panel) {
+    if (panel.dataset.writingEventsBound) return;
+    panel.dataset.writingEventsBound = "true";
+    panel.addEventListener("input", event => {
+        const input = event.target.closest("[data-online-bag-input]");
+        if (input) onlineDraftState.contents[input.dataset.bagId] = input.value;
+        if (event.target.matches("[data-online-secret-input]")) onlineDraftState.contents.secret = event.target.value;
+        scheduleOnlineDraftSave();
+        updateOnlineWritingUI();
+    });
+    panel.addEventListener("change", event => {
+        const select = event.target.closest("[data-online-bag-type]");
+        if (!select) return;
+        onlineDraftState.contentTypes[select.dataset.bagId] = select.value;
+        scheduleOnlineDraftSave();
+        updateOnlineWritingUI();
+    });
+    panel.addEventListener("click", event => {
+        const countButton = event.target.closest("[data-count-delta]");
+        if (countButton) changeOnlineSelectedBagCount(Number(countButton.dataset.countDelta));
+        const bagButton = event.target.closest("[data-toggle-online-bag]");
+        if (bagButton) toggleOnlineBag(Number(bagButton.dataset.toggleOnlineBag));
+    });
+}
+
+function changeOnlineSelectedBagCount(delta) {
+    const maximum = onlineGame.state.room.boxesPerPlayer;
+    const next = Math.max(1, Math.min(maximum, onlineDraftState.selectedBagCount + delta));
+    if (next === onlineDraftState.selectedBagCount) return;
+    if (next < onlineDraftState.selectedBagIds.length) {
+        const removed = onlineDraftState.selectedBagIds.slice(next);
+        if (removed.some(number => String(onlineDraftState.contents[number] || "").trim()) && !confirm("Giảm số lượng túi? Nội dung trong các túi bị bỏ chọn sẽ bị xóa.")) return;
+        removed.forEach(number => { delete onlineDraftState.contents[number]; delete onlineDraftState.contentTypes[number]; });
+        onlineDraftState.selectedBagIds = onlineDraftState.selectedBagIds.slice(0, next);
+        removed.forEach(updateOnlineWritingCard);
+    }
+    onlineDraftState.selectedBagCount = next;
+    scheduleOnlineDraftSave();
+    updateOnlineWritingUI();
+}
+
+function toggleOnlineBag(number) {
+    const selectedIndex = onlineDraftState.selectedBagIds.indexOf(number);
+    if (selectedIndex >= 0) {
+        if (String(onlineDraftState.contents[number] || "").trim() && !confirm("Bỏ chọn túi này? Nội dung đang nhập trong túi sẽ bị xóa.")) return;
+        onlineDraftState.selectedBagIds.splice(selectedIndex, 1);
+        delete onlineDraftState.contents[number];
+        delete onlineDraftState.contentTypes[number];
+    } else {
+        if (onlineDraftState.selectedBagIds.length >= onlineDraftState.selectedBagCount) return showToast(`Bạn đã chọn đủ ${onlineDraftState.selectedBagCount} vị trí túi.`);
+        onlineDraftState.selectedBagIds.push(number);
+    }
+    updateOnlineWritingCard(number);
+    scheduleOnlineDraftSave();
+    updateOnlineWritingUI();
+}
+
+function updateOnlineWritingCard(number) {
+    const card = document.querySelector(`[data-online-card="${number}"]`);
+    if (!card) return;
+    const selected = onlineDraftState.selectedBagIds.includes(number);
+    card.classList.toggle("not-selected", !selected);
+    card.classList.toggle("input-box-disabled", !selected);
+    card.querySelector("textarea").disabled = !selected;
+    card.querySelector("select").disabled = !selected;
+    const button = card.querySelector("[data-toggle-online-bag]");
+    button.textContent = selected ? "✓ Đã chọn" : "+ Chọn túi";
+    button.className = `btn btn-mini ${selected ? "btn-primary" : "btn-secondary"}`;
+    if (!selected) card.querySelector("textarea").value = "";
+}
+
+function updateOnlineWritingUI() {
+    const s = onlineGame.state;
+    if (!s || s.me.hasLockedContent) return;
+    if (s.room.gameMode === "find-secret-sentence") {
+        const content = String(onlineDraftState.contents.secret || "");
+        const counter = document.getElementById("online-secret-counter");
+        if (counter) counter.textContent = `${content.length}/200`;
+        const button = document.getElementById("online-lock-button");
+        if (button) button.disabled = !content.trim() || !onlineGame.selectedSecretBox || onlineGame.connection !== "connected" || onlineGame.loading;
+        return;
+    }
+    const selected = onlineDraftState.selectedBagIds;
+    const filled = selected.filter(number => String(onlineDraftState.contents[number] || "").trim()).length;
+    const selectedProgress = document.getElementById("online-selected-progress");
+    const writingProgress = document.getElementById("online-writing-progress");
+    const countValue = document.getElementById("online-selected-count-value");
+    if (countValue) countValue.textContent = onlineDraftState.selectedBagCount;
+    if (selectedProgress) selectedProgress.textContent = `Đã chọn ${selected.length}/${onlineDraftState.selectedBagCount} vị trí.`;
+    if (writingProgress) writingProgress.textContent = `Đã viết: ${filled}/${onlineDraftState.selectedBagCount} ô · Chưa điền: ${onlineDraftState.selectedBagCount - filled} ô`;
+    selected.forEach(number => {
+        const content = String(onlineDraftState.contents[number] || "");
+        const counter = document.querySelector(`[data-counter-for="${number}"]`);
+        if (counter) counter.textContent = `${content.length}/150`;
+        const card = document.querySelector(`[data-online-card="${number}"]`);
+        if (card) {
+            card.classList.toggle("selected-filled", Boolean(content.trim()));
+            card.classList.toggle("selected-empty", !content.trim());
+            const status = card.querySelector(".online-card-status");
+            if (status) status.textContent = content.trim() ? "✓ Đã nhập" : "Chưa nhập nội dung";
+        }
+    });
+    document.querySelectorAll("[data-toggle-online-bag]").forEach(button => {
+        const number = Number(button.dataset.toggleOnlineBag);
+        button.disabled = !selected.includes(number) && selected.length >= onlineDraftState.selectedBagCount;
+    });
+    const button = document.getElementById("online-lock-button");
+    if (button) button.disabled = selected.length !== onlineDraftState.selectedBagCount || filled !== onlineDraftState.selectedBagCount || onlineGame.connection !== "connected" || onlineGame.loading;
+}
+
+window.selectOnlineSecretBox=function(number){onlineGame.selectedSecretBox=number;scheduleOnlineDraftSave();document.querySelectorAll(".online-secret-picker .picker-box").forEach(b=>b.classList.toggle("selected",Number(b.dataset.number)===number));updateOnlineWritingUI();};
 window.lockOnlineContent=async function(){
     const s=onlineGame.state;let items=[];
     if(s.room.gameMode==="find-secret-sentence"){
-        const content=document.getElementById("online-secret-content").value.trim();
+        const content=String(onlineDraftState.contents.secret||"").trim();
         if(!content||!onlineGame.selectedSecretBox)return showOnlineInlineError("online-writing-error","Hãy nhập câu bí mật và chọn một ô giấu.");
         items=[{boxNumber:onlineGame.selectedSecretBox,content,contentType:"secret",isSecret:true}];
     }else{
-        for(let n=1;n<=s.room.boxesPerPlayer;n++){const content=document.getElementById(`online-content-${n}`).value.trim();if(!content)return showOnlineInlineError("online-writing-error",`Vui lòng nhập nội dung túi số ${n}.`);items.push({boxNumber:n,content,contentType:document.getElementById(`online-type-${n}`).value,isSecret:false});}
+        const missingSelection=onlineDraftState.selectedBagCount-onlineDraftState.selectedBagIds.length;if(missingSelection>0)return showOnlineInlineError("online-writing-error",`Bạn cần chọn thêm ${missingSelection} vị trí túi mù.`);
+        for(const n of onlineDraftState.selectedBagIds){const content=String(onlineDraftState.contents[n]||"").trim();if(!content)return showOnlineInlineError("online-writing-error",`Túi số ${n} chưa có nội dung.`);items.push({boxNumber:n,content,contentType:onlineDraftState.contentTypes[n]||"question",isSecret:false});}
     }
-    await runOnlineAction(()=>roomService.saveContent(s.room.id,items),"Đang khóa nội dung...");
+    await runOnlineAction(()=>roomService.saveContent(s.room.id,items,items.length),"Đang khóa nội dung...");
 };
 
 function renderOnlineReady(){const panel=document.getElementById("online-ready-panel");panel.classList.remove("hidden");const s=onlineGame.state;panel.innerHTML=`<div class="online-wait-state"><i class="fa-solid fa-circle-check"></i><h3>Cả hai đã hoàn thành</h3><p>Nội dung đã được khóa an toàn trên máy chủ.</p></div><div class="online-players">${onlinePlayersHtml()}</div>${s.me.role==="host"?'<button class="btn btn-primary btn-large" onclick="startOnlineRoom()">Bắt đầu khui túi mù</button>':'<p class="waiting-message">Đang chờ chủ phòng bắt đầu...</p>'}`;}
