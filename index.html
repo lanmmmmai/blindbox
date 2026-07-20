@@ -14,16 +14,17 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="./assets/icons/icon.svg">
     
-    <!-- Google Fonts: Outfit và Inter -->
+    <!-- Font tròn, hỗ trợ tiếng Việt cho giao diện casual game -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Style CSS của Web App -->
     <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/kawaii-theme.css">
 </head>
 <body>
 
@@ -74,7 +75,8 @@
             <!-- HEADER TRÊN DI ĐỘNG (ẨN MENU CHÍNH VÌ ĐÃ CÓ BOTTOM NAV) -->
             <header class="app-header">
                 <div class="header-main-row">
-                    <h1 class="logo"><i class="fa-solid fa-gift pulse-icon"></i> Túi Mù Bí Mật</h1>
+                    <button class="game-header-menu" onclick="toggleGameMenu()" aria-label="Mở menu"><i class="fa-solid fa-bars"></i></button>
+                    <h1 class="logo"><i class="fa-solid fa-gift pulse-icon"></i> <span>Túi Mù<br><b>Bí Mật</b></span></h1>
                     <div class="header-controls">
                         <button id="btn-toggle-theme" class="btn-icon-round" title="Chuyển chế độ Sáng/Tối">
                             <i class="fa-solid fa-circle-half-stroke"></i>
@@ -84,7 +86,7 @@
                         </button>
                     </div>
                 </div>
-                <p class="tagline">Mini game khui quà và thử thách nhóm lầy lội</p>
+                <div class="game-status-row"><span class="game-currency-badge"><i class="fa-solid fa-gem"></i> 120</span><p class="tagline">Mở túi · Bật mí điều vui!</p><span class="game-online-badge"><i class="fa-solid fa-circle"></i> Online</span></div>
             </header>
 
             <!-- ==================== SPA VIEWS ==================== -->
@@ -93,9 +95,9 @@
             <section id="view-home" class="app-view">
                 <div class="card home-card-wrapper text-center">
                     <div class="home-logo-section">
-                        <i class="fa-solid fa-gift home-logo-icon"></i>
+                        <div class="kawaii-mascot" aria-hidden="true"><span class="mascot-ear left"></span><span class="mascot-ear right"></span><span class="mascot-face"><i></i><b></b></span><span class="mascot-gift"><i class="fa-solid fa-gift"></i></span></div>
                         <h1>Túi Mù Bí Mật</h1>
-                        <p>Trò chơi khui túi quà, câu nói và thử thách bí ẩn nhóm cực lầy lội. Tạo ván chơi của riêng bạn và thách thức bạn bè!</p>
+                        <p>Mở túi, bật mí câu chuyện và gom thật nhiều khoảnh khắc vui cùng bạn bè!</p>
                     </div>
                     
                     <!-- Ván chơi đang dở -->
@@ -104,14 +106,65 @@
                     </div>
 
                     <div class="home-menu-list">
-                        <button class="btn btn-primary btn-large" onclick="navigateTo('create')">
-                            <i class="fa-solid fa-circle-plus"></i> Tạo ván chơi mới
+                        <p id="firebase-home-notice" class="connection-banner warning">Đang chuẩn bị chức năng online...</p>
+                        <button class="btn btn-primary btn-large game-menu-button" data-online-entry disabled onclick="navigateTo('online-create')">
+                            <i class="fa-solid fa-gamepad"></i><span><b>TẠO PHÒNG ONLINE</b><small>Mời bạn chơi từ thiết bị khác</small></span>
+                        </button>
+                        <button class="btn btn-secondary btn-large game-menu-button" data-online-entry disabled onclick="navigateTo('join')">
+                            <i class="fa-solid fa-key"></i><span><b>THAM GIA PHÒNG</b><small>Nhập mã phòng 6 ký tự</small></span>
+                        </button>
+                        <div class="play-type-divider"><span>hoặc chơi cùng thiết bị</span></div>
+                        <button class="btn btn-mint btn-large game-menu-button" onclick="navigateTo('create')">
+                            <i class="fa-solid fa-user-group"></i><span><b>CHƠI CÙNG THIẾT BỊ</b><small>Chuyền máy và chơi tại chỗ</small></span>
                         </button>
                         <button class="btn btn-secondary btn-large" onclick="navigateTo('history')">
                             <i class="fa-solid fa-list-check"></i> Xem lịch sử ván chơi
                         </button>
                     </div>
                 </div>
+            </section>
+
+            <!-- ONLINE: TẠO PHÒNG -->
+            <section id="view-online-create" class="app-view">
+                <div class="card online-form-card">
+                    <div class="online-view-heading"><i class="fa-solid fa-gift"></i><div><h2>Tạo phòng mới</h2><p>Mời một người bạn và cùng mở những túi mù bí mật.</p></div></div>
+                    <div id="online-config-warning" class="connection-banner warning hidden">Chưa cấu hình Firebase. Xem README để bật chế độ online.</div>
+                    <form id="online-create-form" onsubmit="submitCreateOnlineRoom(event)">
+                        <div class="form-group"><label for="online-host-name">Tên của bạn</label><input id="online-host-name" maxlength="30" required placeholder="Ví dụ: Lan"></div>
+                        <div class="form-group"><label for="online-room-title">Tên ván chơi</label><input id="online-room-title" maxlength="80" value="Đêm Hội Online" required></div>
+                        <div class="form-group"><label>Chọn chế độ chơi</label><select id="online-game-mode" class="game-native-control" aria-hidden="true"><option value="normal">Túi mù thông thường</option><option value="find-secret-sentence">Tìm câu nói bí mật</option></select><div class="game-mode-cards"><button type="button" class="game-mode-card selected" data-mode="normal" onclick="selectOnlineGameMode('normal')"><i class="fa-solid fa-gift"></i><span><b>Túi mù thông thường</b><small>Tạo câu hỏi, thử thách và lời nhắn vui.</small></span><em><i class="fa-solid fa-check"></i></em></button><button type="button" class="game-mode-card" data-mode="find-secret-sentence" onclick="selectOnlineGameMode('find-secret-sentence')"><i class="fa-solid fa-magnifying-glass"></i><span><b>Tìm câu nói bí mật</b><small>Giấu một câu, ai tìm thấy trước sẽ thắng.</small></span><em><i class="fa-solid fa-check"></i></em></button></div></div>
+                        <div class="form-group"><label>Số túi mỗi người</label><select id="online-box-count" class="game-native-control" aria-hidden="true"><option>3</option><option selected>6</option><option>9</option><option>12</option></select><div class="game-count-chips"><button type="button" onclick="selectOnlineBoxCount(3)">3 túi</button><button type="button" class="selected" onclick="selectOnlineBoxCount(6)">6 túi</button><button type="button" onclick="selectOnlineBoxCount(9)">9 túi</button><button type="button" onclick="selectOnlineBoxCount(12)">12 túi</button></div><div id="online-bag-preview" class="bag-layout-preview"><span>1</span><span>4</span><span>2</span><span>5</span><span>3</span><span>6</span></div></div>
+                        <p id="online-create-error" class="inline-error hidden"></p>
+                        <div class="online-form-actions"><button type="button" class="btn btn-secondary" onclick="navigateTo('home')">Quay lại</button><button id="btn-create-online-room" class="btn btn-primary" type="submit"><i class="fa-solid fa-plus"></i> Tạo phòng</button></div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- ONLINE: THAM GIA -->
+            <section id="view-join" class="app-view">
+                <div class="card online-form-card">
+                    <div class="online-view-heading"><i class="fa-solid fa-right-to-bracket"></i><div><h2>Tham gia phòng</h2><p>Nhập mã 6 ký tự mà chủ phòng đã gửi.</p></div></div>
+                    <form id="online-join-form" onsubmit="submitJoinOnlineRoom(event)">
+                        <div class="form-group"><label for="online-join-code">Mã phòng</label><input id="online-join-code" class="room-code-input" maxlength="6" required autocomplete="off" placeholder="K7P4QX" oninput="formatOnlineRoomCode(this)"></div>
+                        <div class="form-group"><label for="online-join-name">Tên của bạn</label><input id="online-join-name" maxlength="30" required placeholder="Ví dụ: Minh"></div>
+                        <p id="online-join-error" class="inline-error hidden"></p>
+                        <div class="online-form-actions"><button type="button" class="btn btn-secondary" onclick="navigateTo('home')">Quay lại</button><button id="btn-join-online-room" class="btn btn-primary" type="submit">Tham gia phòng</button></div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- ONLINE: PHÒNG CHỜ / NHẬP / CHƠI / KẾT QUẢ -->
+            <section id="view-online-room" class="app-view">
+                <div id="online-connection-banner" class="connection-banner hidden"></div>
+                <div class="online-room-header card">
+                    <div><span class="online-eyebrow">PHÒNG ONLINE</span><h2>Phòng <span id="online-room-code">------</span></h2><p id="online-room-title-display"></p></div>
+                    <div class="online-connection-pill" id="online-connection-pill"><span></span> Đang kết nối</div>
+                </div>
+                <div id="online-lobby-panel" class="card online-panel"></div>
+                <div id="online-writing-panel" class="card online-panel hidden"></div>
+                <div id="online-ready-panel" class="card online-panel hidden"></div>
+                <div id="online-game-panel" class="card online-panel hidden"></div>
+                <div id="online-result-panel" class="card online-panel hidden"></div>
             </section>
 
             <!-- VIEW 2: TRÌNH TẠO VÁN CHƠI 4 BƯỚC (CREATE VIEW) -->
@@ -631,6 +684,13 @@
                         </div>
                     </div>
 
+                    <div class="firebase-status-card">
+                        <div class="firebase-status-heading"><i class="fa-solid fa-cloud"></i><div><h3>Kết nối Firebase</h3><p>Anonymous Authentication và Cloud Firestore</p></div></div>
+                        <p id="firebase-connection-status" class="firebase-status-message loading">Đang kiểm tra kết nối...</p>
+                        <p id="firebase-user-id" class="firebase-user-id"></p>
+                        <button type="button" class="btn btn-secondary btn-tiny" onclick="retryFirebaseConnection()"><i class="fa-solid fa-rotate"></i> Kiểm tra lại</button>
+                    </div>
+
                     <!-- Quản lý Backup / Xuất nhập dữ liệu -->
                     <div class="grid-summary" style="text-align: left; margin-bottom: 25px;">
                         <h4 style="font-family:'Outfit',sans-serif; color: var(--text-primary); margin-bottom: 8px;"><i class="fa-solid fa-database"></i> Sao lưu và Khôi phục dữ liệu</h4>
@@ -810,11 +870,17 @@
 
     <!-- Canvas Confetti Library (Hỗ trợ pháo hoa chúc mừng) -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
     <!-- JS MODULES -->
     <script src="./js/constants.js"></script>
     <script src="./js/ui.js"></script>
     <script src="./js/storage.js"></script>
+    <script src="./js/firebase-config.js"></script>
+    <script src="./js/firebase-auth.js"></script>
+    <script src="./js/firebase-connection-test.js"></script>
+    <script src="./js/firebase-functions.js"></script>
+    <script src="./js/firebase-room-service.js"></script>
+    <script src="./js/firebase-realtime.js"></script>
+    <script src="./js/online-game.js"></script>
     <script src="./js/game-state.js"></script>
     <script src="./js/router.js"></script>
     <script src="./js/pwa.js"></script>

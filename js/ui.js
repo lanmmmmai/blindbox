@@ -173,9 +173,11 @@ function setLoadingState(isLoading, message = "Đang xử lý...") {
             transition: opacity 0.2s ease;
         `;
         loader.innerHTML = `
-            <div style="width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.1); border-top-color: #7657e8; border-radius: 50%; animation: spin 1s infinite linear;"></div>
-            <div id="app-global-loader-text">${message}</div>
-        `;
+            <div class="game-loader-card">
+                <div class="game-loader-bag"><i class="fa-solid fa-question"></i></div>
+                <div id="app-global-loader-text">${message}</div>
+                <div class="game-loader-dots"><i></i><i></i><i></i></div>
+            </div>`;
         document.body.appendChild(loader);
     }
 

@@ -1,14 +1,22 @@
 // Tăng phiên bản khi thay đổi tài nguyên tĩnh để client không giữ lại
 // CSS/JS cũ từ Service Worker.
-const CACHE_NAME = "tui-mu-bi-mat-v11";
+const CACHE_NAME = "tui-mu-bi-mat-v17";
 const STATIC_ASSETS = [
   "./",
   "./index.html",
   "./css/style.css",
+  "./css/kawaii-theme.css",
   "./js/constants.js",
   "./js/app.js",
   "./js/router.js",
   "./js/storage.js",
+  "./js/firebase-config.js",
+  "./js/firebase-auth.js",
+  "./js/firebase-connection-test.js",
+  "./js/firebase-functions.js",
+  "./js/firebase-room-service.js",
+  "./js/firebase-realtime.js",
+  "./js/online-game.js",
   "./js/game-state.js",
   "./js/pwa.js",
   "./js/ui.js",
@@ -45,24 +53,31 @@ self.addEventListener("activate", (event) => {
 
 // Chiến lược Fetch: Cache First cho tài nguyên tĩnh, Network First cho phần còn lại
 self.addEventListener("fetch", (event) => {
-  if (!event.request.url.startsWith(self.location.origin) && !event.request.url.startsWith('http')) {
-    return;
-  }
+  const request = event.request;
+  const url = new URL(request.url);
+
+  // Service Worker không được can thiệp vào callable POST hay Firebase APIs.
+  if (request.method !== "GET") return;
+  if (url.protocol !== "http:" && url.protocol !== "https:") return;
+  const isFirebaseRequest = url.hostname.includes("cloudfunctions.net") ||
+    url.hostname.includes("googleapis.com") ||
+    url.hostname.includes("firebaseio.com") ||
+    url.hostname.includes("firebaseapp.com");
+  if (isFirebaseRequest) return;
 
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
+    caches.match(request).then((cachedResponse) => {
       if (cachedResponse) {
-        fetch(event.request).then((networkResponse) => {
-          if (networkResponse.status === 200) {
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
+        fetch(request).then((networkResponse) => {
+          if (networkResponse.ok && networkResponse.type === "basic") {
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, networkResponse));
           }
         }).catch(() => {/* Ignore network errors offline */});
         return cachedResponse;
       }
 
-      return fetch(event.request).then((networkResponse) => {
-        const url = new URL(event.request.url);
-        if (networkResponse.status === 200 && (
+      return fetch(request).then((networkResponse) => {
+        if (networkResponse.ok && networkResponse.type === "basic" && (
           url.pathname.endsWith('.js') || 
           url.pathname.endsWith('.css') || 
           url.pathname.endsWith('.svg') ||
@@ -70,13 +85,14 @@ self.addEventListener("fetch", (event) => {
           url.pathname.includes('font-awesome')
         )) {
           const clonedResponse = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clonedResponse));
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clonedResponse));
         }
         return networkResponse;
       }).catch(() => {
-        if (event.request.headers.get("accept").includes("text/html")) {
-          return caches.match("./offline.html");
+        if (request.mode === "navigate" || request.headers.get("accept")?.includes("text/html")) {
+          return caches.match("./offline.html").then(response => response || new Response("Ứng dụng đang ngoại tuyến.", { status: 503, headers: { "Content-Type": "text/plain; charset=utf-8" } }));
         }
+        return new Response("Không thể tải tài nguyên khi ngoại tuyến.", { status: 503, headers: { "Content-Type": "text/plain; charset=utf-8" } });
       });
     })
   );

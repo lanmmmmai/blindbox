@@ -106,3 +106,4 @@ function decryptContent(encodedText) {
         return atob(encodedText);
     }
 }
+const PLAY_TYPES = Object.freeze({ LOCAL: "local", ONLINE: "online" });

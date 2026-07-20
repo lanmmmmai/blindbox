@@ -1,1 +1,8 @@
 .tools/
+.env
+.env.local
+functions/node_modules/
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log

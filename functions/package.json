@@ -1,0 +1,16 @@
+{
+  "name": "tui-mu-bi-mat-functions",
+  "private": true,
+  "main": "src/index.js",
+  "engines": { "node": "20" },
+  "scripts": {
+    "lint": "eslint src",
+    "serve": "firebase emulators:start --only functions,firestore,auth",
+    "deploy": "firebase deploy --only functions"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.2.0",
+    "firebase-functions": "^5.0.1"
+  },
+  "devDependencies": { "eslint": "^8.57.0" }
+}

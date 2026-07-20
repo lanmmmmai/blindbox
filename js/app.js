@@ -7,6 +7,10 @@
 // DOM Cache
 const DOM = {};
 
+window.toggleGameMenu = function() {
+    document.querySelector(".sidebar-navigation")?.classList.toggle("mobile-open");
+};
+
 // 4. KHỞI CHẠY KHỞI ĐỘNG (ENTRY POINT)
 document.addEventListener("DOMContentLoaded", () => {
     // Cache tất cả DOM selectors dùng chung
@@ -27,6 +31,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // Khởi tạo PWA cài đặt
     registerServiceWorker();
     initPwaInstallControls();
+
+    // Chuẩn bị UID ẩn danh sớm; không chặn chế độ local nếu Firebase/mạng lỗi.
+    initializeFirebaseConnection();
+
+    // Khôi phục phòng online nếu thiết bị còn phiên hợp lệ.
+    attemptOnlineReconnect();
 
     // Sự kiện cuộn bàn chơi để ẩn chỉ báo cuộn
     if (DOM.gameGrid) {
@@ -123,7 +133,8 @@ function initModalEvents() {
     // 1. Modal xem hộp quà
     if (DOM.btnCloseModal) {
         DOM.btnCloseModal.addEventListener("click", () => {
-            completeCurrentTurn();
+            if (onlineBoxModalActive) closeOnlineBoxModal();
+            else completeCurrentTurn();
         });
     }
 

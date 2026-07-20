@@ -4,6 +4,9 @@
 
 const APP_ROUTES = {
     HOME: "home",
+    ONLINE_CREATE: "online-create",
+    JOIN: "join",
+    ONLINE_ROOM: "online-room",
     CREATE: "create",
     LOBBY: "lobby",
     INPUT: "input",
@@ -81,7 +84,10 @@ function restoreGamePhaseRoute(game) {
 // 3. XỬ LÝ ĐIỀU HƯỚNG
 function handleRouting() {
     let hash = window.location.hash || `#/home`;
-    let route = hash.replace(/^#\//, "");
+    let routeWithQuery = hash.replace(/^#\//, "");
+    const queryIndex = routeWithQuery.indexOf("?");
+    const query = queryIndex >= 0 ? new URLSearchParams(routeWithQuery.slice(queryIndex + 1)) : new URLSearchParams();
+    let route = queryIndex >= 0 ? routeWithQuery.slice(0, queryIndex) : routeWithQuery;
     
     // Tách param nếu có (ví dụ: game-details/game-uuid)
     let params = null;
@@ -118,7 +124,7 @@ function handleRouting() {
     controlNavigationVisibility(route);
 
     // Gọi các hàm render đặc trưng của từng route
-    dispatchViewRenderer(route, params);
+    dispatchViewRenderer(route, params, query);
 }
 
 // Cập nhật class active trên nút điều hướng
@@ -142,6 +148,9 @@ function controlNavigationVisibility(route) {
         APP_ROUTES.INPUT,
         APP_ROUTES.PRIVACY,
         APP_ROUTES.READY
+        ,APP_ROUTES.ONLINE_CREATE
+        ,APP_ROUTES.JOIN
+        ,APP_ROUTES.ONLINE_ROOM
     ];
 
     const bottomNav = document.querySelector(".bottom-navigation");
@@ -173,9 +182,15 @@ function controlNavigationVisibility(route) {
 }
 
 // Phân phối render view tương ứng
-function dispatchViewRenderer(route, params) {
+function dispatchViewRenderer(route, params, query) {
     if (route === APP_ROUTES.HOME) {
         renderHomeView();
+    } else if (route === APP_ROUTES.ONLINE_CREATE) {
+        renderOnlineCreateView();
+    } else if (route === APP_ROUTES.JOIN) {
+        renderOnlineJoinView(query);
+    } else if (route === APP_ROUTES.ONLINE_ROOM) {
+        renderOnlineRoomView();
     } else if (route === APP_ROUTES.CREATE) {
         renderCreateGameView();
     } else if (route === APP_ROUTES.LOBBY) {

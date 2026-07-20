@@ -1532,6 +1532,8 @@ window.handleBoxClick = function(boxIndex) {
 
     lastFocusedElement = wrapper;
     isProcessingAction = true;
+    wrapper?.classList.add('opening');
+    setTimeout(() => wrapper?.classList.remove('opening'), 700);
     
     // Mở ô thực tế
     box.isOpened = true;
