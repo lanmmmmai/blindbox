@@ -1,6 +1,6 @@
 // Tăng phiên bản khi thay đổi tài nguyên tĩnh để client không giữ lại
 // CSS/JS cũ từ Service Worker.
-const CACHE_NAME = "tui-mu-bi-mat-v20";
+const CACHE_NAME = "tui-mu-bi-mat-v21";
 const STATIC_ASSETS = [
   "./",
   "./index.html",

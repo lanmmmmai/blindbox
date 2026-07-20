@@ -16,7 +16,9 @@ async function lockContent(request, secretMode) {
       secretData={roomCode:code,ownerUid:uid,mode:room.gameMode,encryptedContent:contents,isLocked:true,roundNumber:room.roundNumber,createdAt:FieldValue.serverTimestamp(),updatedAt:FieldValue.serverTimestamp()};
     }
     tx.create(sRef,secretData);
-    const boxNumbers=secretMode?Array.from({length:room.boxesPerPlayer},(_,index)=>index+1):secretData.encryptedContent.map(item=>item.boxNumber);
+    // Luôn tạo đủ các túi công khai để đối phương không thể đoán vị trí có
+    // nội dung. Danh sách vị trí thật chỉ nằm trong roomSecrets phía server.
+    const boxNumbers=Array.from({length:room.boxesPerPlayer},(_,index)=>index+1);
     boxNumbers.forEach(n=>tx.create(rRef.collection("boxes").doc(boxId(uid,n)),{ownerUid:uid,boxNumber:n,isLocked:true,isOpened:false,openedByUid:null,openedAt:null,roundNumber:room.roundNumber}));
     tx.update(pRef,{hasLockedContent:true,lastSeenAt:FieldValue.serverTimestamp()});
     const otherLocked=playersSnap.docs.filter(d=>d.id!==uid).every(d=>d.data().hasLockedContent);
